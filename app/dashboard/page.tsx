@@ -11,6 +11,10 @@ interface Portal {
   slug: string;
   clientName?: string;
   createdAt: string;
+  isActive: boolean;
+  whiteLabeled: boolean;
+  customDomain: string | null;
+  updatedAt: string;
   _count?: {
     files: number;
   };
@@ -61,7 +65,10 @@ export default function DashboardPage() {
           const portals = portalsData.portals || [];
           const files = filesData.files || [];
 
-          const fileCount = portals.reduce(
+          // Filter only active portals for overview
+          const activePortals = portals.filter((p: Portal) => p.isActive !== false);
+
+          const fileCount = activePortals.reduce(
             (acc: number, p: any) => acc + (p._count?.files || 0),
             0,
           );
@@ -72,13 +79,13 @@ export default function DashboardPage() {
           );
 
           setStats({
-            totalPortals: portals.length,
-            activePortals: portals.length,
+            totalPortals: activePortals.length,
+            activePortals: activePortals.length,
             totalFilesReceived: fileCount,
             recentActivityCount: recentFiles.length,
           });
 
-          setActivePortalsList(portals);
+          setActivePortalsList(activePortals);
           setRecentActivities(files);
         }
       } catch (error) {
@@ -279,12 +286,29 @@ export default function DashboardPage() {
                   className="bg-bg-card border border-border rounded-[14px] p-6 hover:border-muted transition-all cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-bold text-text-white text-base">
-                      {portal.name}
-                    </h3>
-                    <span className="text-xs px-2 py-1 rounded-md bg-accent-green/10 text-accent-green">
-                      Active
-                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-text-white text-base truncate">
+                        {portal.name}
+                      </h3>
+                      <p className="text-xs text-text-muted truncate mt-1">
+                        /{portal.slug}
+                      </p>
+                      {portal.customDomain && (
+                        <p className="text-xs text-primary mt-1 truncate">
+                          {portal.customDomain}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                      <span className="text-xs px-2 py-1 rounded-md bg-accent-green/10 text-accent-green">
+                        Active
+                      </span>
+                      {portal.whiteLabeled && (
+                        <span className="text-xs px-2 py-1 rounded-md bg-purple-50 text-purple-600 dark:bg-purple-950/50">
+                          Premium
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-text-muted">
                     <div className="flex items-center gap-1">
