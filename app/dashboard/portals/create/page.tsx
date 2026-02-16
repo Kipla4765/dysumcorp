@@ -1341,12 +1341,10 @@ export default function CreatePortalPage() {
       return;
     }
 
-    // Validate max file size
-    if (!formData.maxFileSize || formData.maxFileSize <= 0) {
-      setError("Maximum file size must be specified");
-      setCurrentStep("security");
-      return;
-    }
+    // Max file size is optional, will default to 50MB on server
+    const finalMaxFileSize = formData.maxFileSize && formData.maxFileSize > 0 
+      ? formData.maxFileSize 
+      : 50; // Default 50MB
 
     setLoading(true);
 
@@ -1389,7 +1387,7 @@ export default function CreatePortalPage() {
           password: formData.password || null,
           requireClientName: formData.requireClientName,
           requireClientEmail: formData.requireClientEmail,
-          maxFileSize: formData.maxFileSize * 1024 * 1024, // Convert MB to bytes
+          maxFileSize: finalMaxFileSize * 1024 * 1024, // Convert MB to bytes
           allowedFileTypes: formData.allowedFileTypes,
           
           // Messaging

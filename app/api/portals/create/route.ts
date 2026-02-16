@@ -193,9 +193,15 @@ export async function POST(request: Request) {
 
     console.log("[/api/portals/create] Portal created successfully:", portal.id);
 
+    // Convert BigInt to string for JSON serialization
+    const portalResponse = {
+      ...portal,
+      maxFileSize: portal.maxFileSize.toString(),
+    };
+
     return NextResponse.json({
       success: true,
-      portal,
+      portal: portalResponse,
       message: "Portal created successfully",
     });
   } catch (error) {
