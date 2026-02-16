@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-import { auth } from "@/lib/auth-server";
+import { getSessionFromRequest } from "@/lib/auth-server";
 import { PrismaClient } from "@/lib/generated/prisma/client";
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -16,9 +16,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -44,7 +42,17 @@ export async function GET(
       return NextResponse.json({ error: "Portal not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ portal });
+    // Serialize BigInt fields
+    const serializedPortal = {
+      ...portal,
+      maxFileSize: portal.maxFileSize.toString(),
+      files: portal.files.map(file => ({
+        ...file,
+        size: file.size.toString(),
+      })),
+    };
+
+    return NextResponse.json({ portal: serializedPortal });
   } catch (error) {
     console.error("Error fetching portal:", error);
 
@@ -62,9 +70,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -97,7 +103,13 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json({ success: true, portal });
+    // Serialize BigInt
+    const serializedPortal = {
+      ...portal,
+      maxFileSize: portal.maxFileSize.toString(),
+    };
+
+    return NextResponse.json({ success: true, portal: serializedPortal });
   } catch (error) {
     console.error("Error updating portal:", error);
 
@@ -115,9 +127,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -43,7 +43,13 @@ export async function GET(request: Request) {
 
     console.log("[/api/portals] Found portals:", portals.length);
 
-    return NextResponse.json({ portals });
+    // Convert BigInt fields to strings for JSON serialization
+    const serializedPortals = portals.map(portal => ({
+      ...portal,
+      maxFileSize: portal.maxFileSize.toString(),
+    }));
+
+    return NextResponse.json({ portals: serializedPortals });
   } catch (error) {
     console.error("Error fetching portals:", error);
 
