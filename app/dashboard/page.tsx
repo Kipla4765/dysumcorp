@@ -449,7 +449,7 @@ export default function DashboardPage() {
                       className="rounded-xl font-medium text-xs h-8 px-3 border border-border hover:bg-muted transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
-                        alert("Edit functionality coming soon!");
+                        router.push(`/dashboard/portals/${portal.id}/edit`);
                       }}
                       title="Edit Portal"
                     >

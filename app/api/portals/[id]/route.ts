@@ -77,7 +77,28 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, customDomain, whiteLabeled } = body;
+    const {
+      name,
+      customDomain,
+      whiteLabeled,
+      primaryColor,
+      textColor,
+      backgroundColor,
+      cardBackgroundColor,
+      logoUrl,
+      storageProvider,
+      storageFolderId,
+      storageFolderPath,
+      useClientFolders,
+      password,
+      requireClientName,
+      requireClientEmail,
+      maxFileSize,
+      allowedFileTypes,
+      welcomeMessage,
+      submitButtonText,
+      successMessage,
+    } = body;
 
     // Verify ownership
     const existingPortal = await prisma.portal.findFirst({
@@ -91,16 +112,43 @@ export async function PATCH(
       return NextResponse.json({ error: "Portal not found" }, { status: 404 });
     }
 
+    // Build update data object
+    const updateData: any = {};
+    
+    // Identity
+    if (name !== undefined) updateData.name = name;
+    
+    // Branding
+    if (primaryColor !== undefined) updateData.primaryColor = primaryColor;
+    if (textColor !== undefined) updateData.textColor = textColor;
+    if (backgroundColor !== undefined) updateData.backgroundColor = backgroundColor;
+    if (cardBackgroundColor !== undefined) updateData.cardBackgroundColor = cardBackgroundColor;
+    if (logoUrl !== undefined) updateData.logoUrl = logoUrl || null;
+    if (customDomain !== undefined) updateData.customDomain = customDomain || null;
+    if (whiteLabeled !== undefined) updateData.whiteLabeled = whiteLabeled;
+    
+    // Storage
+    if (storageProvider !== undefined) updateData.storageProvider = storageProvider;
+    if (storageFolderId !== undefined) updateData.storageFolderId = storageFolderId;
+    if (storageFolderPath !== undefined) updateData.storageFolderPath = storageFolderPath;
+    if (useClientFolders !== undefined) updateData.useClientFolders = useClientFolders;
+    
+    // Security
+    if (password !== undefined) updateData.passwordHash = password || null;
+    if (requireClientName !== undefined) updateData.requireClientName = requireClientName;
+    if (requireClientEmail !== undefined) updateData.requireClientEmail = requireClientEmail;
+    if (maxFileSize !== undefined) updateData.maxFileSize = BigInt(maxFileSize);
+    if (allowedFileTypes !== undefined) updateData.allowedFileTypes = allowedFileTypes;
+    
+    // Messaging
+    if (welcomeMessage !== undefined) updateData.welcomeMessage = welcomeMessage || null;
+    if (submitButtonText !== undefined) updateData.submitButtonText = submitButtonText;
+    if (successMessage !== undefined) updateData.successMessage = successMessage;
+
     // Update portal
     const portal = await prisma.portal.update({
       where: { id },
-      data: {
-        ...(name && { name }),
-        ...(customDomain !== undefined && {
-          customDomain: customDomain || null,
-        }),
-        ...(whiteLabeled !== undefined && { whiteLabeled }),
-      },
+      data: updateData,
     });
 
     // Serialize BigInt

@@ -450,10 +450,7 @@ export default function PortalsPage() {
                   className="rounded-xl font-medium text-xs h-8 px-3"
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                    // TODO: Implement edit functionality
-                    alert("Edit functionality coming soon!");
-                  }}
+                  onClick={() => router.push(`/dashboard/portals/${portal.id}/edit`)}
                   title="Edit Portal"
                 >
                   <svg
