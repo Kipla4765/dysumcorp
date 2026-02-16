@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-import { getSession } from "@/lib/auth-server";
+import { getSessionFromRequest } from "@/lib/auth-server";
 import { PrismaClient } from "@/lib/generated/prisma/client";
 import {
   checkPortalLimit,
@@ -17,7 +17,7 @@ const prisma = new PrismaClient({ adapter });
 
 export async function POST(request: Request) {
   try {
-    const session = await getSession();
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -37,7 +37,7 @@ export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
     creemProductId: "", // No product ID for free plan
     creemProductIdAnnual: "",
     limits: {
-      portals: 1,
+      portals: 5,
       storage: 1, // 1GB
       customDomains: 0,
       whiteLabeling: false,
@@ -50,7 +50,7 @@ export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
       customBranding: false,
     },
     features: [
-      "1 Portal",
+      "5 Portals",
       "1GB Storage",
       "Unlimited downloads",
       "Basic file sharing",

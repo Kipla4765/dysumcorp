@@ -4,11 +4,19 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
 /**
- * Get the current session
- * Use this in Server Components or API routes
+ * Get the current session for Server Components
+ * Use this in Server Components only
  */
 export async function getSession() {
   return await auth.api.getSession({ headers: await headers() });
+}
+
+/**
+ * Get the current session for API Routes
+ * Use this in API route handlers
+ */
+export async function getSessionFromRequest(request: Request) {
+  return await auth.api.getSession({ headers: request.headers });
 }
 
 /**

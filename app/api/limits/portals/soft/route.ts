@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { checkPortalLimit, getUserPlanType } from "@/lib/plan-limits";
-import { getSession } from "@/lib/auth-server";
+import { getSessionFromRequest } from "@/lib/auth-server";
 import { PlanType } from "@/config/pricing";
 
 export interface SoftLimitResponse {
@@ -23,7 +23,7 @@ export interface SoftLimitResponse {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession();
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
