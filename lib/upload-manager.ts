@@ -118,7 +118,16 @@ async function uploadDirectToCloud(options: UploadOptions): Promise<UploadResult
     });
 
     if (!uploadUrlResponse.ok) {
-      throw new Error("Failed to get upload URL");
+      const errorData = await uploadUrlResponse.json();
+      
+      // If no storage connected, show helpful error
+      if (uploadUrlResponse.status === 400 && errorData.error?.includes("storage connected")) {
+        throw new Error(
+          "Cloud storage not connected. Please connect Google Drive or Dropbox in Settings to upload files larger than 4 MB."
+        );
+      }
+      
+      throw new Error(errorData.error || "Failed to get upload URL");
     }
 
     const uploadData = await uploadUrlResponse.json();
