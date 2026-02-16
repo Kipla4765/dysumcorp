@@ -30,20 +30,30 @@ export async function checkPortalLimit(
     ? limits.portals + Math.max(Math.ceil(limits.portals * 0.1), 1)
     : limits.portals;
 
+  if (currentCount >= effectiveLimit) {
+    // Hard block - exceeded even the soft limit
+    return {
+      allowed: false,
+      reason: `Portal limit exceeded. Your ${planType} plan allows ${limits.portals} portal(s) and grace period is exhausted.`,
+      current: currentCount,
+      limit: limits.portals,
+    };
+  }
+
   if (currentCount >= limits.portals) {
-    if (softMode && currentCount < effectiveLimit) {
-      // Allow with warning
+    if (softMode) {
+      // Allow with warning in soft mode
       return {
-        allowed: false,
+        allowed: true,
         reason: `Portal limit reached. Your ${planType} plan allows ${limits.portals} portal(s). You have ${effectiveLimit - currentCount} grace uses remaining.`,
         current: currentCount,
         limit: limits.portals,
       };
-    } else if (currentCount >= effectiveLimit) {
-      // Hard block
+    } else {
+      // Hard block in non-soft mode
       return {
         allowed: false,
-        reason: `Portal limit exceeded. Your ${planType} plan allows ${limits.portals} portal(s) and grace period is exhausted.`,
+        reason: `Portal limit reached. Your ${planType} plan allows ${limits.portals} portal(s).`,
         current: currentCount,
         limit: limits.portals,
       };
