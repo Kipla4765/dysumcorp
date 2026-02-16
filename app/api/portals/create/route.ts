@@ -184,9 +184,16 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error creating portal:", error);
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     return NextResponse.json(
-      { error: "Failed to create portal" },
+      { 
+        error: "Failed to create portal",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 },
     );
   }
