@@ -77,7 +77,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate storage configuration
+    // Storage is now optional - if provided, validate it
     if (storageProvider && (!storageFolderId || !storageFolderPath)) {
       return NextResponse.json(
         { error: "Storage folder must be selected when storage provider is specified" },

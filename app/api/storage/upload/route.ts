@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth-server";
+import { getSessionFromRequest } from "@/lib/auth-server";
 import {
   getValidToken,
   uploadToGoogleDrive,
@@ -12,7 +12,7 @@ import { checkStorageLimit, getUserPlanType } from "@/lib/plan-limits";
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getSession();
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

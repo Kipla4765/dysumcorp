@@ -1333,9 +1333,10 @@ export default function CreatePortalPage() {
       return;
     }
 
-    // Validate storage configuration
-    if (!formData.storageProvider || !formData.storageFolderId) {
-      setError("Storage provider and folder must be selected");
+    // Validate storage configuration - make it optional
+    // If storage is provided, folder must be selected
+    if (formData.storageProvider && !formData.storageFolderId) {
+      setError("Storage folder must be selected when storage provider is specified");
       setCurrentStep("storage");
       return;
     }

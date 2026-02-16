@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth-server";
+import { getSessionFromRequest } from "@/lib/auth-server";
 import { getValidToken } from "@/lib/storage-api";
 
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getSession();
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
