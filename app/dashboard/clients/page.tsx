@@ -37,6 +37,8 @@ interface FileItem {
   downloads: number;
   passwordHash?: string | null;
   expiresAt?: string | null;
+  uploaderEmail?: string | null;
+  uploaderName?: string | null;
   portal: {
     id: string;
     name: string;
@@ -153,12 +155,12 @@ export default function ClientsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        // Filter files by client email
+        // Filter files by client email using uploaderEmail field
         const filtered = data.files.filter(
           (f: FileItem) =>
-            f.portal &&
+            f.uploaderEmail &&
             client.email &&
-            f.portal.name.toLowerCase().includes(client.email.toLowerCase()),
+            f.uploaderEmail.toLowerCase() === client.email.toLowerCase(),
         );
 
         setClientFiles(filtered);
