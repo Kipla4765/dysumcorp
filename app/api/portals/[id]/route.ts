@@ -30,7 +30,18 @@ export async function GET(
       include: {
         files: {
           orderBy: { uploadedAt: "desc" },
-          take: 10,
+          select: {
+            id: true,
+            name: true,
+            size: true,
+            mimeType: true,
+            storageUrl: true,
+            uploadedAt: true,
+            passwordHash: true,
+            downloads: true,
+            uploaderName: true,
+            uploaderEmail: true,
+          },
         },
         _count: {
           select: { files: true },
