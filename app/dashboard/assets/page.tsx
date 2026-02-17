@@ -321,7 +321,7 @@ export default function AssetsPage() {
   }
 
   return (
-    <div>
+    <div className="w-full overflow-hidden">
       {/* Header */}
       <div className="mb-10">
         <h1 className="text-4xl font-black text-foreground tracking-tight">
@@ -333,7 +333,7 @@ export default function AssetsPage() {
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 w-full overflow-hidden">
         {/* Navigation Sidebar */}
         <aside className="lg:w-64 flex-shrink-0">
           <nav className="space-y-1">
