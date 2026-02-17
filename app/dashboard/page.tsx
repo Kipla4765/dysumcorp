@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, FileText, X } from "lucide-react";
+import { Download, Calendar, Trash2, FolderOpen } from "lucide-react";
 
 import { useSession } from "@/lib/auth-client";
 
@@ -47,6 +49,7 @@ export default function DashboardPage() {
   const [selectedPortal, setSelectedPortal] = useState<Portal | null>(null);
   const [showFilesModal, setShowFilesModal] = useState(false);
   const [portalFiles, setPortalFiles] = useState<any[]>([]);
+  const [deletingFile, setDeletingFile] = useState<string | null>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -148,6 +151,116 @@ export default function DashboardPage() {
       console.error("Failed to toggle portal status:", error);
       alert("Failed to toggle portal status");
     }
+  };
+
+  const handleDownloadFile = async (file: any) => {
+    try {
+      let filePassword = "";
+      if (file.passwordHash) {
+        const promptPassword = prompt(
+          "This file is password protected. Please enter the password:",
+        );
+
+        if (!promptPassword) return;
+        filePassword = promptPassword;
+      }
+      const response = await fetch(`/api/files/${file.id}/download`, {
+        headers: file.passwordHash ? { "x-file-password": filePassword } : {},
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else if (response.status === 401) {
+        alert("Invalid password. Please try again.");
+      } else {
+        alert("Failed to download file");
+      }
+    } catch (error) {
+      console.error("Failed to download file:", error);
+      alert("Failed to download file");
+    }
+  };
+
+  const handleDeleteFile = async (fileId: string, fileName: string) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${fileName}"? This action cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    setDeletingFile(fileId);
+    try {
+      const response = await fetch(`/api/files/${fileId}`, { method: "DELETE" });
+
+      if (response.ok) {
+        setPortalFiles(portalFiles.filter((f) => f.id !== fileId));
+        alert("File deleted successfully");
+      } else {
+        alert("Failed to delete file");
+      }
+    } catch (error) {
+      console.error("Failed to delete file:", error);
+      alert("Failed to delete file");
+    } finally {
+      setDeletingFile(null);
+    }
+  };
+
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType.startsWith("image/")) return "🖼️";
+    if (mimeType.startsWith("video/")) return "🎥";
+    if (mimeType.startsWith("audio/")) return "🎵";
+    if (mimeType.includes("pdf")) return "📄";
+    if (mimeType.includes("word") || mimeType.includes("document")) return "📝";
+    if (mimeType.includes("sheet") || mimeType.includes("excel")) return "📊";
+    if (mimeType.includes("presentation") || mimeType.includes("powerpoint"))
+      return "📽️";
+    if (
+      mimeType.includes("zip") ||
+      mimeType.includes("rar") ||
+      mimeType.includes("archive")
+    )
+      return "📦";
+
+    return "📎";
+  };
+
+  const formatFileSize = (bytes: string) => {
+    const size = Number(bytes);
+
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+    if (size < 1024 * 1024 * 1024)
+      return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+
+    return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+
+    if (hours < 1) return "Just now";
+    if (hours < 24) return `${hours} hours ago`;
+    if (hours < 48) return "Yesterday";
+
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   if (loading) {
@@ -638,52 +751,100 @@ export default function DashboardPage() {
 
       {/* Portal Files Modal */}
       {showFilesModal && selectedPortal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background border rounded-xl max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
-            <div className="flex items-center justify-between p-6 border-b">
-              <div>
-                <h2 className="text-xl font-bold">{selectedPortal.name}</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {portalFiles.length} file{portalFiles.length !== 1 ? "s" : ""} uploaded
-                </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-background/40 backdrop-blur-sm"
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            onClick={() => {
+              setShowFilesModal(false);
+              setSelectedPortal(null);
+              setPortalFiles([]);
+            }}
+          />
+          <motion.div
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-2xl bg-bg-card rounded-[14px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          >
+            <div className="p-8 border-b border-border bg-muted/50 flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-card shadow-sm border border-border flex items-center justify-center text-xl font-bold text-foreground">
+                  <FolderOpen className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground leading-tight">
+                    {selectedPortal.name}
+                  </h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    /{selectedPortal.slug}
+                  </p>
+                </div>
               </div>
               <button
-                className="rounded-xl p-2 hover:bg-muted transition-colors"
+                className="p-2 hover:bg-muted rounded-xl transition-colors text-muted-foreground hover:text-foreground"
                 onClick={() => {
                   setShowFilesModal(false);
                   setSelectedPortal(null);
                   setPortalFiles([]);
                 }}
               >
-                <X className="w-4 h-4" />
+                <X className="w-6 h-6" />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto flex-1">
-              {portalFiles.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <p className="text-muted-foreground">No files uploaded yet</p>
+
+            <div className="p-8 overflow-y-auto flex-1">
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-bg-card p-4 rounded-[14px] border border-border">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
+                    Total Files
+                  </p>
+                  <p className="text-xl font-bold text-foreground">
+                    {portalFiles.length}
+                  </p>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {portalFiles.map((file: any) => (
+                <div className="bg-bg-card p-4 rounded-[14px] border border-border">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
+                    Total Size
+                  </p>
+                  <p className="text-xl font-bold text-foreground">
+                    {formatFileSize(
+                      portalFiles
+                        .reduce((acc, f) => acc + Number(f.size || 0), 0)
+                        .toString()
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <h4 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                Uploaded Files
+              </h4>
+
+              <div className="space-y-2">
+                {portalFiles.length > 0 ? (
+                  portalFiles.map((file: any) => (
                     <div
                       key={file.id}
-                      className="flex items-center gap-4 p-4 border rounded-xl hover:bg-muted/50 transition-colors"
+                      className="flex items-center gap-3 p-3 bg-muted rounded-xl border border-border hover:bg-bg-card transition-colors"
                     >
-                      <div className="flex-shrink-0">
-                        <FileText className="w-8 h-8 text-primary" />
-                      </div>
+                      <span className="text-2xl">
+                        {getFileIcon(file.mimeType)}
+                      </span>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{file.name}</p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                          <span>
-                            {(Number(file.size) / 1024 / 1024).toFixed(2)} MB
-                          </span>
+                        <p className="font-medium text-foreground text-sm truncate">
+                          {file.name}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <span>{formatFileSize(file.size)}</span>
                           <span>•</span>
-                          <span>
-                            {new Date(file.uploadedAt).toLocaleDateString()}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {formatDate(file.uploadedAt)}
+                          </div>
                           {file.uploaderName && (
                             <>
                               <span>•</span>
@@ -692,17 +853,65 @@ export default function DashboardPage() {
                           )}
                         </div>
                       </div>
-                      <div className="flex-shrink-0">
-                        <span className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                          {file.downloads || 0} downloads
-                        </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          className="p-2 text-muted-foreground hover:text-foreground hover:bg-card rounded-lg transition-all"
+                          title="Download"
+                          onClick={() => handleDownloadFile(file)}
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 text-muted-foreground hover:text-foreground hover:bg-card rounded-lg transition-all"
+                          title="Open file"
+                          onClick={() => window.open(file.storageUrl, '_blank')}
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all disabled:opacity-50"
+                          disabled={deletingFile === file.id}
+                          title="Delete"
+                          onClick={() => handleDeleteFile(file.id, file.name)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <div className="py-12 text-center">
+                    <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground text-sm">
+                      No files uploaded yet
+                    </p>
+                    <p className="text-muted-foreground text-xs mt-1">
+                      Files uploaded to this portal will appear here.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+
+            <div className="p-6 bg-muted border-t border-border flex justify-end gap-3">
+              <button
+                className="px-6 py-2.5 bg-card border border-border rounded-2xl text-sm font-bold text-muted-foreground hover:bg-muted transition-all"
+                onClick={() => {
+                  setShowFilesModal(false);
+                  setSelectedPortal(null);
+                  setPortalFiles([]);
+                }}
+              >
+                Close
+              </button>
+              <button
+                className="px-6 py-2.5 bg-foreground text-background rounded-2xl text-sm font-bold hover:opacity-90 shadow-sm transition-all flex items-center gap-2"
+                onClick={() => window.open(`/portal/${selectedPortal.slug}`, '_blank')}
+              >
+                View Portal <ExternalLink className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
     </main>
