@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-import { auth } from "@/lib/auth-server";
+import { getSessionFromRequest } from "@/lib/auth-server";
 import { PrismaClient } from "@/lib/generated/prisma/client";
 import {
   getValidToken,
@@ -58,9 +58,7 @@ export async function GET(
       );
     }
 
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

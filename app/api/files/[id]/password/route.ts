@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-import { auth } from "@/lib/auth-server";
+import { getSessionFromRequest } from "@/lib/auth-server";
 import { PrismaClient } from "@/lib/generated/prisma/client";
 import { hashPassword, validatePassword } from "@/lib/password-utils";
 
@@ -17,9 +17,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -90,9 +88,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    const session = await getSessionFromRequest(request);
 
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
