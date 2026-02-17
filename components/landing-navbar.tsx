@@ -30,28 +30,23 @@ export function LandingNavbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 px-4 md:px-8 lg:px-16 bg-white/80 backdrop-blur-md border-b border-slate-200">
-      <div className="flex h-16 items-center justify-between max-w-7xl mx-auto">
-        <Link className="flex items-center gap-2" href="/">
-          <div className="flex items-center space-x-2">
-            <Image
-              alt="Dysumcorp - Secure Client File Collection Portal"
-              height={20}
-              src="/logo.svg"
-              width={44}
-            />
-            <span className="text-xl font-semibold">Dysumcorp</span>
-          </div>
+    <header
+      className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[80%] max-w-4xl rounded-full bg-white/90 backdrop-blur-md shadow-xl shadow-slate-900/10 border border-slate-200/50"
+      style={{ padding: "0 24px" }}
+    >
+      <div className="flex h-16 items-center justify-between gap-6">
+        <Link className="flex items-center gap-2 shrink-0" href="/">
+          <Image alt="Dysumcorp" height={24} src="/logo.svg" width={48} />
+          <span className="text-xl font-semibold text-slate-900">
+            Dysumcorp
+          </span>
         </Link>
 
-        <nav
-          aria-label="Main navigation"
-          className="hidden md:flex items-center space-x-8"
-        >
+        <nav className="hidden md:flex items-center gap-6">
           {navigationItems.map((item) => (
             <a
               key={item.title}
-              className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
+              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
               href={item.href}
             >
               {item.title}
@@ -59,76 +54,40 @@ export function LandingNavbar() {
           ))}
         </nav>
 
-        <div className="flex items-center space-x-4">
-          <div className="hidden lg:flex items-center gap-6 mr-6">
-            <a
-              className="text-sm text-slate-500 hover:text-slate-900 transition-colors"
-              href="tel:1-800-DYSUM"
-            >
-              1-800-DYSUM
-            </a>
-            <Button
-              className="border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-sm px-4 py-2"
-              variant="outline"
-              onClick={() =>
-                window.open("https://demo.dysumcorp.com", "_blank")
-              }
-            >
-              Demo
-            </Button>
-          </div>
+        <div className="flex items-center gap-4">
           <Button
-            aria-label={
-              session?.user
-                ? "Go to dashboard"
-                : "Get started with free account"
-            }
-            className="hidden md:inline-flex bg-slate-900 hover:bg-slate-950 text-white shadow-lg shadow-slate-900/20 hover:shadow-xl transition-all duration-200"
-            variant="default"
+            className="hidden md:inline-flex bg-slate-900 hover:bg-slate-800 text-white rounded-full font-medium transition-all"
+            style={{ padding: "10px 24px" }}
             onClick={handleGetStarted}
           >
-            {session?.user ? "Dashboard" : "Start Free Trial"}{" "}
-            <ArrowRight className="ml-1 w-4 h-4" />
+            Get Started
+            <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
+
           <Sheet>
             <SheetTrigger asChild>
               <Button className="md:hidden" size="icon" variant="ghost">
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent className="w-[300px] sm:w-[350px]">
-              <nav className="flex flex-col gap-6 mt-6">
+              <nav className="flex flex-col gap-6 mt-8">
                 {navigationItems.map((item) => (
                   <a
                     key={item.title}
-                    className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
+                    className="text-base font-medium text-slate-600 hover:text-slate-900"
                     href={item.href}
                   >
                     {item.title}
                   </a>
                 ))}
-                <a
-                  className="text-sm text-slate-500 hover:text-slate-900 transition-colors"
-                  href="tel:1-800-DYSUM"
-                >
-                  1-800-DYSUM
-                </a>
                 <Button
-                  className="cursor-pointer border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                  variant="outline"
-                  onClick={() =>
-                    window.open("https://demo.dysumcorp.com", "_blank")
-                  }
-                >
-                  Watch Demo
-                </Button>
-                <Button
-                  className="cursor-pointer bg-slate-900 hover:bg-slate-950 text-white shadow-lg shadow-slate-900/20"
+                  className="bg-slate-900 hover:bg-slate-800 text-white mt-4"
+                  style={{ padding: "12px 32px" }}
                   onClick={handleGetStarted}
                 >
-                  {session?.user ? "Dashboard" : "Start Free Trial"}{" "}
-                  <ArrowRight className="ml-1 w-4 h-4" />
+                  Get Started
+                  <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </nav>
             </SheetContent>

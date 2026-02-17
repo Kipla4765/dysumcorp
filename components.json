@@ -20,6 +20,8 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@lucide-animated": "https://lucide-animated.com/r/{name}.json"
+    "@lucide-animated": "https://lucide-animated.com/r/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}",
+    "@animate-ui": "https://animate-ui.com/r/{name}.json"
   }
 }
