@@ -16,6 +16,9 @@ import {
   Mail,
   Copy,
   Check,
+  Download,
+  ExternalLink,
+  Trash2,
 } from "lucide-react";
 
 interface Client {
@@ -55,6 +58,7 @@ export default function ClientsPage() {
   const [clientFiles, setClientFiles] = useState<FileItem[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [deletingFile, setDeletingFile] = useState<string | null>(null);
 
   const tabs = [
     {
@@ -188,6 +192,69 @@ export default function ClientsPage() {
     navigator.clipboard.writeText(text);
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2000);
+  };
+
+  const handleDownloadFile = async (file: FileItem) => {
+    try {
+      let filePassword = "";
+      if (file.passwordHash) {
+        const promptPassword = prompt(
+          "This file is password protected. Please enter the password:",
+        );
+
+        if (!promptPassword) return;
+        filePassword = promptPassword;
+      }
+      const response = await fetch(`/api/files/${file.id}/download`, {
+        headers: file.passwordHash ? { "x-file-password": filePassword } : {},
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else if (response.status === 401) {
+        alert("Invalid password. Please try again.");
+      } else {
+        alert("Failed to download file");
+      }
+    } catch (error) {
+      console.error("Failed to download file:", error);
+      alert("Failed to download file");
+    }
+  };
+
+  const handleDeleteFile = async (fileId: string, fileName: string) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${fileName}"? This action cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    setDeletingFile(fileId);
+    try {
+      const response = await fetch(`/api/files/${fileId}`, { method: "DELETE" });
+
+      if (response.ok) {
+        setClientFiles(clientFiles.filter((f) => f.id !== fileId));
+        alert("File deleted successfully");
+      } else {
+        alert("Failed to delete file");
+      }
+    } catch (error) {
+      console.error("Failed to delete file:", error);
+      alert("Failed to delete file");
+    } finally {
+      setDeletingFile(null);
+    }
   };
 
   const filteredClients = clients.filter(
@@ -569,13 +636,38 @@ export default function ClientsPage() {
                           <p className="font-medium text-foreground text-sm truncate">
                             {file.name}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatFileSize(file.size)}
-                          </p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                            <span>{formatFileSize(file.size)}</span>
+                            <span>•</span>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {formatDate(file.uploadedAt)}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="w-3 h-3" />
-                          {formatDate(file.uploadedAt)}
+                        <div className="flex items-center gap-1">
+                          <button
+                            className="p-2 text-muted-foreground hover:text-foreground hover:bg-card rounded-lg transition-all"
+                            title="Download"
+                            onClick={() => handleDownloadFile(file)}
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="p-2 text-muted-foreground hover:text-foreground hover:bg-card rounded-lg transition-all"
+                            title="Open file"
+                            onClick={() => window.open(file.storageUrl, '_blank')}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="p-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all disabled:opacity-50"
+                            disabled={deletingFile === file.id}
+                            title="Delete"
+                            onClick={() => handleDeleteFile(file.id, file.name)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
                     ))
