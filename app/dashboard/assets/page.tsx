@@ -514,7 +514,7 @@ export default function AssetsPage() {
                                     key={file.id}
                                     className="py-4 hover:bg-muted/20 transition-colors px-4 -mx-4 rounded-xl"
                                   >
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                                       <div className="flex-shrink-0 text-3xl">
                                         {getFileIcon(file.mimeType)}
                                       </div>
@@ -522,7 +522,7 @@ export default function AssetsPage() {
                                         <h4 className="font-semibold text-foreground truncate">
                                           {file.name}
                                         </h4>
-                                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-muted-foreground mt-1">
                                           <span className="flex items-center gap-1">
                                             {getStorageIcon(
                                               getStorageType(file.storageUrl),
@@ -531,16 +531,16 @@ export default function AssetsPage() {
                                               getStorageType(file.storageUrl),
                                             )}
                                           </span>
-                                          <span>•</span>
+                                          <span className="hidden sm:inline">•</span>
                                           <span>{formatFileSize(file.size)}</span>
                                           {file.passwordHash && (
                                             <>
-                                              <span>•</span>
+                                              <span className="hidden sm:inline">•</span>
                                               <Lock className="w-3 h-3" />
                                             </>
                                           )}
                                         </div>
-                                        <div className="flex items-center gap-2 mt-1">
+                                        <div className="flex flex-wrap items-center gap-2 mt-1">
                                           <span className="text-xs text-muted-foreground">
                                             Portal:
                                           </span>
@@ -555,7 +555,7 @@ export default function AssetsPage() {
                                           </a>
                                         </div>
                                       </div>
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-2 sm:ml-auto">
                                         <button
                                           className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
                                           title="Download"
@@ -686,7 +686,7 @@ export default function AssetsPage() {
                                         key={file.id}
                                         className="py-3 hover:bg-card/50 transition-colors px-3 -mx-3 rounded-xl"
                                       >
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                           <div className="flex-shrink-0 text-2xl">
                                             {getFileIcon(file.mimeType)}
                                           </div>
@@ -694,17 +694,17 @@ export default function AssetsPage() {
                                             <h4 className="font-semibold text-foreground truncate text-sm">
                                               {file.name}
                                             </h4>
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-1">
                                               <span>
                                                 {formatFileSize(file.size)}
                                               </span>
-                                              <span>•</span>
+                                              <span className="hidden sm:inline">•</span>
                                               <span>
                                                 {formatDate(file.uploadedAt)}
                                               </span>
                                             </div>
                                           </div>
-                                          <div className="flex items-center gap-1">
+                                          <div className="flex items-center gap-1 sm:ml-auto">
                                             <button
                                               className="p-2 text-muted-foreground hover:text-foreground hover:bg-card rounded-lg transition-all"
                                               title="Download"
