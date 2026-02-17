@@ -282,7 +282,13 @@ export default function PortalsPage() {
       } else if (response.status === 401) {
         alert("Invalid password. Please try again.");
       } else {
-        alert("Failed to download file");
+        // Try to get error message from response
+        try {
+          const errorData = await response.json();
+          alert(errorData.error || "Failed to download file");
+        } catch {
+          alert("Failed to download file");
+        }
       }
     } catch (error) {
       console.error("Failed to download file:", error);
