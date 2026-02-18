@@ -4,209 +4,105 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare,
-  Star,
-  Bell,
+  HelpCircle,
   ChevronRight,
-  ExternalLink,
-  Plus,
-  Clock,
+  Mail,
+  Send,
   CheckCircle,
-  AlertCircle,
-  X,
+  Book,
+  Zap,
 } from "lucide-react";
-import { Select, SelectItem } from "@heroui/react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export default function SupportPage() {
-  const [activeTab, setActiveTab] = useState("tickets");
-  const [showCreateTicket, setShowCreateTicket] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
-  const [ticketSubject, setTicketSubject] = useState("");
-  const [ticketMessage, setTicketMessage] = useState("");
-  const [ticketPriority, setTicketPriority] = useState("Medium");
-  const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [feedbackRating, setFeedbackRating] = useState(0);
-  const [submitStatus, setSubmitStatus] = useState<
-    "idle" | "success" | "error"
-  >("idle");
-
-  // Mock ticket data
-  const tickets = [
-    {
-      id: "TICK-1234",
-      subject: "Login issues on mobile app",
-      status: "Open",
-      priority: "High",
-      created: "2 hours ago",
-      messages: 3,
-    },
-    {
-      id: "TICK-1233",
-      subject: "Feature request: Dark mode",
-      status: "In Progress",
-      priority: "Medium",
-      created: "1 day ago",
-      messages: 5,
-    },
-    {
-      id: "TICK-1232",
-      subject: "Billing question",
-      status: "Resolved",
-      priority: "Low",
-      created: "3 days ago",
-      messages: 2,
-    },
-    {
-      id: "TICK-1231",
-      subject: "API integration help",
-      status: "Resolved",
-      priority: "Medium",
-      created: "5 days ago",
-      messages: 8,
-    },
-  ];
-
-  // Mock notifications
-  const notifications = [
-    {
-      id: 1,
-      title: "New Feature Released",
-      message: "Check out our new file sharing capabilities",
-      time: "1 hour ago",
-      type: "info",
-    },
-    {
-      id: 2,
-      title: "Maintenance Scheduled",
-      message: "System maintenance on Sunday 2AM-4AM EST",
-      time: "3 hours ago",
-      type: "warning",
-    },
-    {
-      id: 3,
-      title: "Ticket Updated",
-      message: "Your ticket TICK-1233 has been updated",
-      time: "1 day ago",
-      type: "success",
-    },
-  ];
-
-  const resources = [
-    {
-      title: "Getting Started Guide",
-      description: "Learn the basics of using the platform",
-      link: "#",
-    },
-    {
-      title: "API Documentation",
-      description: "Complete API reference and examples",
-      link: "#",
-    },
-    {
-      title: "Video Tutorials",
-      description: "Step-by-step video guides",
-      link: "#",
-    },
-    {
-      title: "Community Forum",
-      description: "Connect with other users",
-      link: "#",
-    },
-  ];
+  const [activeTab, setActiveTab] = useState("contact");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   const tabs = [
     {
-      id: "tickets",
-      name: "My Tickets",
+      id: "contact",
+      name: "Contact Support",
       icon: MessageSquare,
-      description: "Track and manage your support requests",
+      description: "Get in touch with our support team",
     },
     {
-      id: "feedback",
-      name: "Feedback",
-      icon: Star,
-      description: "Share your experience and suggestions",
-    },
-    {
-      id: "updates",
-      name: "Updates",
-      icon: Bell,
-      description: "Recent notifications and announcements",
+      id: "faq",
+      name: "FAQ",
+      icon: HelpCircle,
+      description: "Frequently asked questions",
     },
   ];
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Open":
-        return <Clock className="w-4 h-4 text-blue-500" />;
-      case "In Progress":
-        return <AlertCircle className="w-4 h-4 text-yellow-500" />;
-      case "Resolved":
-        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
-      default:
-        return null;
-    }
-  };
+  const faqs = [
+    {
+      question: "How do I create a new portal?",
+      answer: "Navigate to the Portals page and click the 'Create Portal' button. Fill in the required information including portal name, slug, and configure your desired settings for branding, storage, security, and messaging.",
+    },
+    {
+      question: "What storage providers are supported?",
+      answer: "We currently support Google Drive and Dropbox. You can connect your cloud storage accounts from the Storage page in your dashboard. All file uploads will be stored in your connected cloud storage.",
+    },
+    {
+      question: "How do I share a portal with clients?",
+      answer: "Each portal has a unique URL (e.g., yoursite.com/portal/your-slug). You can copy this link from the portal card and share it with your clients. Clients can upload files without needing an account.",
+    },
+    {
+      question: "Can I password protect files?",
+      answer: "Yes! When viewing files in the Assets page, you can set a password for individual files. Clients will need to enter this password to download the file.",
+    },
+    {
+      question: "How do I track file downloads?",
+      answer: "File download counts are automatically tracked and displayed in the Assets page. You can see how many times each file has been downloaded.",
+    },
+    {
+      question: "What are the plan limits?",
+      answer: "Free plan allows 5 portals. Premium plans offer unlimited portals, custom branding, and advanced features. Check the Billing page for detailed plan information.",
+    },
+    {
+      question: "How do I deactivate a portal?",
+      answer: "On the Portals page, click the deactivate button (X icon) on any portal card. Deactivated portals won't accept new uploads but existing files remain accessible.",
+    },
+    {
+      question: "Can I customize portal branding?",
+      answer: "Yes! When creating or editing a portal, you can customize the logo, colors, welcome message, and success message to match your brand.",
+    },
+  ];
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "High":
-        return "bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800";
-      case "Medium":
-        return "bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800";
-      case "Low":
-        return "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800";
-      default:
-        return "bg-muted text-muted-foreground border-border";
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitStatus("sending");
 
-  const handleCreateTicket = () => {
-    // In a real app, this would submit to an API
-    console.log("Creating ticket:", {
-      ticketSubject,
-      ticketMessage,
-      ticketPriority,
-    });
-    setSubmitStatus("success");
+    // TODO: Implement actual email sending via API
+    // For now, simulate sending
     setTimeout(() => {
-      setShowCreateTicket(false);
-      setTicketSubject("");
-      setTicketMessage("");
-      setTicketPriority("Medium");
-      setSubmitStatus("idle");
+      setSubmitStatus("success");
+      setTimeout(() => {
+        setName("");
+        setEmail("");
+        setSubject("");
+        setMessage("");
+        setSubmitStatus("idle");
+      }, 3000);
     }, 1500);
   };
 
-  const handleSubmitFeedback = () => {
-    // In a real app, this would submit to an API
-    console.log("Submitting feedback:", { feedbackRating, feedbackMessage });
-    setSubmitStatus("success");
-    setTimeout(() => {
-      setFeedbackMessage("");
-      setFeedbackRating(0);
-      setSubmitStatus("idle");
-    }, 2000);
-  };
-
-  const openTickets = tickets.filter((t) => t.status === "Open").length;
-
   return (
-    <div>
+    <div className="w-full overflow-hidden">
       {/* Header */}
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-foreground tracking-tight">
-          Support
+          Support & Help
         </h1>
         <p className="text-muted-foreground mt-2 text-lg">
-          Get help, manage tickets, and share feedback
+          Get assistance, find answers, and explore resources
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 w-full overflow-hidden">
         {/* Navigation Sidebar */}
         <aside className="lg:w-64 flex-shrink-0">
           <nav className="space-y-1">
@@ -230,9 +126,7 @@ export default function SupportPage() {
                   <span className="font-medium text-sm">{tab.name}</span>
                   {isActive && (
                     <motion.div
-                      animate={{ opacity: 1, x: 0 }}
                       className="ml-auto"
-                      initial={{ opacity: 0, x: -5 }}
                       layoutId="support-active-indicator"
                     >
                       <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -243,39 +137,48 @@ export default function SupportPage() {
             })}
           </nav>
 
-          {/* Quick Stats */}
-          <div className="mt-6 p-4 bg-bg-card rounded-[12px] border border-border">
-            <h3 className="text-sm font-semibold text-foreground mb-3">
-              Quick Stats
-            </h3>
+          {/* Quick Links */}
+          <div className="mt-8 p-4 bg-card border border-border rounded-xl">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+              Quick Links
+            </h4>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Open Tickets</span>
-                <span className="font-semibold text-foreground">
-                  {openTickets}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Tickets</span>
-                <span className="font-semibold text-foreground">
-                  {tickets.length}
-                </span>
-              </div>
+              <a
+                href="mailto:support@dysumcorp.pro"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                Email Support
+              </a>
+              <a
+                href="#"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Book className="w-3.5 h-3.5" />
+                Documentation
+              </a>
+              <a
+                href="#"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Feature Requests
+              </a>
             </div>
           </div>
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1">
+        <main className="flex-1 min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              initial={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="bg-bg-card rounded-[14px] border border-border overflow-hidden">
+              <div className="bg-card rounded-xl border border-border overflow-hidden">
                 <div className="p-6 border-b border-border bg-muted/30">
                   <h2 className="text-xl font-semibold text-foreground">
                     {tabs.find((t) => t.id === activeTab)?.name}
@@ -285,435 +188,195 @@ export default function SupportPage() {
                   </p>
                 </div>
 
-                <div className="p-8">
-                  {/* My Tickets Section */}
-                  {activeTab === "tickets" && (
-                    <div className="space-y-6">
-                      {!showCreateTicket && !selectedTicket ? (
-                        <>
-                          <div className="flex items-center justify-end">
-                            <Button
-                              className="rounded-xl"
-                              onClick={() => setShowCreateTicket(true)}
-                            >
-                              <Plus className="w-4 h-4 mr-2" />
-                              Create Ticket
-                            </Button>
-                          </div>
-
-                          <div className="space-y-3">
-                            {tickets.map((ticket) => (
-                              <div
-                                key={ticket.id}
-                                className="p-4 bg-muted rounded-xl border border-border hover:bg-bg-card transition-colors cursor-pointer"
-                                onClick={() => setSelectedTicket(ticket.id)}
-                              >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                      {getStatusIcon(ticket.status)}
-                                      <span className="text-xs font-mono text-muted-foreground">
-                                        {ticket.id}
-                                      </span>
-                                      <span
-                                        className={`text-xs px-2 py-0.5 rounded-full border ${getPriorityColor(ticket.priority)}`}
-                                      >
-                                        {ticket.priority}
-                                      </span>
-                                    </div>
-                                    <h3 className="font-semibold text-foreground mb-1">
-                                      {ticket.subject}
-                                    </h3>
-                                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                      <span>Status: {ticket.status}</span>
-                                      <span>•</span>
-                                      <span>{ticket.messages} messages</span>
-                                      <span>•</span>
-                                      <span>Created {ticket.created}</span>
-                                    </div>
-                                  </div>
-                                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Help Resources */}
-                          <div className="mt-8 pt-8 border-t border-border">
-                            <h3 className="text-lg font-semibold text-foreground mb-4">
-                              Help Resources
-                            </h3>
-                            <div className="grid gap-4 md:grid-cols-2">
-                              {resources.map((resource, index) => (
-                                <a
-                                  key={index}
-                                  className="p-4 bg-muted rounded-xl border border-border hover:bg-bg-card transition-colors group"
-                                  href={resource.link}
-                                >
-                                  <div className="flex items-start justify-between">
-                                    <div>
-                                      <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-                                        {resource.title}
-                                      </h4>
-                                      <p className="text-sm text-muted-foreground">
-                                        {resource.description}
-                                      </p>
-                                    </div>
-                                    <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                                  </div>
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        </>
-                      ) : showCreateTicket ? (
-                        <div className="space-y-6">
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-foreground">
-                              Create New Ticket
-                            </h3>
-                            <button
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                              onClick={() => {
-                                setShowCreateTicket(false);
-                                setTicketSubject("");
-                                setTicketMessage("");
-                                setTicketPriority("Medium");
-                                setSubmitStatus("idle");
-                              }}
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
-
+                <div className="p-6 sm:p-8">
+                  {/* Contact Support Section */}
+                  {activeTab === "contact" && (
+                    <div className="max-w-2xl">
+                      <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
-                            <Label
-                              className="text-sm font-semibold text-foreground"
-                              htmlFor="subject"
-                            >
-                              Subject
-                            </Label>
-                            <Input
-                              className="mt-2 rounded-xl"
-                              id="subject"
-                              placeholder="Brief description of your issue"
+                            <label htmlFor="name" className="block text-sm font-semibold text-foreground mb-2">
+                              Name
+                            </label>
+                            <input
                               type="text"
-                              value={ticketSubject}
-                              onChange={(e) => setTicketSubject(e.target.value)}
+                              id="name"
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              required
+                              className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
+                              placeholder="Your name"
                             />
                           </div>
-
                           <div>
-                            <Label
-                              className="text-sm font-semibold text-foreground"
-                              htmlFor="priority"
-                            >
-                              Priority
-                            </Label>
-                            <Select
-                              className="mt-2"
-                              label="Priority"
-                              selectedKeys={[ticketPriority]}
-                              onChange={(e) =>
-                                setTicketPriority(e.target.value)
-                              }
-                            >
-                              <SelectItem key="Low">Low</SelectItem>
-                              <SelectItem key="Medium">Medium</SelectItem>
-                              <SelectItem key="High">High</SelectItem>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label
-                              className="text-sm font-semibold text-foreground"
-                              htmlFor="message"
-                            >
-                              Message
-                            </Label>
-                            <textarea
-                              className="mt-2 w-full min-h-[150px] px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                              id="message"
-                              placeholder="Describe your issue in detail..."
-                              value={ticketMessage}
-                              onChange={(e) => setTicketMessage(e.target.value)}
+                            <label htmlFor="email" className="block text-sm font-semibold text-foreground mb-2">
+                              Email
+                            </label>
+                            <input
+                              type="email"
+                              id="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              required
+                              className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
+                              placeholder="your@email.com"
                             />
-                          </div>
-
-                          {submitStatus === "success" && (
-                            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="w-5 h-5" />
-                                <span className="font-medium">
-                                  Ticket created successfully!
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="flex gap-3">
-                            <Button
-                              className="rounded-xl"
-                              disabled={
-                                !ticketSubject ||
-                                !ticketMessage ||
-                                submitStatus === "success"
-                              }
-                              onClick={handleCreateTicket}
-                            >
-                              {submitStatus === "success"
-                                ? "Created!"
-                                : "Submit Ticket"}
-                            </Button>
-                            <Button
-                              className="rounded-xl"
-                              variant="outline"
-                              onClick={() => {
-                                setShowCreateTicket(false);
-                                setTicketSubject("");
-                                setTicketMessage("");
-                                setTicketPriority("Medium");
-                                setSubmitStatus("idle");
-                              }}
-                            >
-                              Cancel
-                            </Button>
                           </div>
                         </div>
-                      ) : (
-                        // Ticket Details View
-                        <div className="space-y-6">
-                          <div className="flex items-center justify-between mb-4">
-                            <button
-                              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                              onClick={() => setSelectedTicket(null)}
-                            >
-                              <ChevronRight className="w-4 h-4 rotate-180" />
-                              <span className="text-sm font-medium">
-                                Back to tickets
+
+                        <div>
+                          <label htmlFor="subject" className="block text-sm font-semibold text-foreground mb-2">
+                            Subject
+                          </label>
+                          <input
+                            type="text"
+                            id="subject"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            required
+                            className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
+                            placeholder="Brief description of your issue"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="message" className="block text-sm font-semibold text-foreground mb-2">
+                            Message
+                          </label>
+                          <textarea
+                            id="message"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            required
+                            rows={6}
+                            className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm resize-none"
+                            placeholder="Describe your issue or question in detail..."
+                          />
+                        </div>
+
+                        {submitStatus === "success" && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                          >
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="w-5 h-5" />
+                              <span className="font-medium">
+                                Message sent successfully! We'll get back to you soon.
                               </span>
-                            </button>
-                          </div>
+                            </div>
+                          </motion.div>
+                        )}
 
-                          {(() => {
-                            const ticket = tickets.find(
-                              (t) => t.id === selectedTicket,
-                            );
-
-                            if (!ticket) return null;
-
-                            return (
-                              <div className="space-y-6">
-                                {/* Ticket Header */}
-                                <div className="p-6 bg-muted rounded-xl border border-border">
-                                  <div className="flex items-start justify-between mb-4">
-                                    <div>
-                                      <div className="flex items-center gap-2 mb-2">
-                                        {getStatusIcon(ticket.status)}
-                                        <span className="text-xs font-mono text-muted-foreground">
-                                          {ticket.id}
-                                        </span>
-                                        <span
-                                          className={`text-xs px-2 py-0.5 rounded-full border ${getPriorityColor(ticket.priority)}`}
-                                        >
-                                          {ticket.priority}
-                                        </span>
-                                      </div>
-                                      <h3 className="text-xl font-semibold text-foreground">
-                                        {ticket.subject}
-                                      </h3>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                    <span>Status: {ticket.status}</span>
-                                    <span>•</span>
-                                    <span>Created {ticket.created}</span>
-                                  </div>
-                                </div>
-
-                                {/* Mock Messages */}
-                                <div className="space-y-4">
-                                  <h4 className="text-sm font-semibold text-foreground">
-                                    Messages ({ticket.messages})
-                                  </h4>
-                                  <div className="space-y-3">
-                                    <div className="p-4 bg-muted rounded-xl border border-border">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-sm font-semibold text-foreground">
-                                          You
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">
-                                          {ticket.created}
-                                        </span>
-                                      </div>
-                                      <p className="text-sm text-foreground">
-                                        Initial ticket message describing the
-                                        issue...
-                                      </p>
-                                    </div>
-
-                                    {ticket.status !== "Open" && (
-                                      <div className="p-4 bg-bg-card rounded-[12px] border border-border">
-                                        <div className="flex items-center gap-2 mb-2">
-                                          <span className="text-sm font-semibold text-foreground">
-                                            Support Team
-                                          </span>
-                                          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                                            Admin
-                                          </span>
-                                          <span className="text-xs text-muted-foreground">
-                                            {ticket.status === "Resolved"
-                                              ? "2 days ago"
-                                              : "1 day ago"}
-                                          </span>
-                                        </div>
-                                        <p className="text-sm text-foreground">
-                                          Thank you for reaching out. We're
-                                          looking into this issue...
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* Reply Form */}
-                                  {ticket.status !== "Resolved" && (
-                                    <div className="pt-4 border-t border-border">
-                                      <Label
-                                        className="text-sm font-semibold text-foreground"
-                                        htmlFor="reply"
-                                      >
-                                        Add Reply
-                                      </Label>
-                                      <textarea
-                                        className="mt-2 w-full min-h-[100px] px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                        id="reply"
-                                        placeholder="Type your message..."
-                                      />
-                                      <Button className="mt-3 rounded-xl">
-                                        Send Reply
-                                      </Button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Feedback Section */}
-                  {activeTab === "feedback" && (
-                    <div className="max-w-md space-y-6">
-                      <div>
-                        <Label className="text-sm font-semibold text-foreground mb-3 block">
-                          How would you rate your experience?
-                        </Label>
-                        <div className="flex gap-2">
-                          {[1, 2, 3, 4, 5].map((rating) => (
-                            <button
-                              key={rating}
-                              className="transition-transform hover:scale-110"
-                              onClick={() => setFeedbackRating(rating)}
-                            >
-                              <Star
-                                className={`w-8 h-8 ${
-                                  rating <= feedbackRating
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : "text-muted-foreground"
-                                }`}
-                              />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label
-                          className="text-sm font-semibold text-foreground"
-                          htmlFor="feedback"
-                        >
-                          Your Feedback
-                        </Label>
-                        <textarea
-                          className="mt-2 w-full min-h-[150px] px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                          id="feedback"
-                          placeholder="Tell us what you think..."
-                          value={feedbackMessage}
-                          onChange={(e) => setFeedbackMessage(e.target.value)}
-                        />
-                      </div>
-
-                      {submitStatus === "success" && (
-                        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5" />
+                        {submitStatus === "error" && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-4 rounded-lg bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                          >
                             <span className="font-medium">
-                              Thank you for your feedback!
+                              Failed to send message. Please try again or email us directly.
                             </span>
-                          </div>
-                        </div>
-                      )}
+                          </motion.div>
+                        )}
 
-                      <Button
-                        className="w-full rounded-xl"
-                        disabled={
-                          !feedbackRating ||
-                          !feedbackMessage ||
-                          submitStatus === "success"
-                        }
-                        onClick={handleSubmitFeedback}
-                      >
-                        {submitStatus === "success"
-                          ? "Submitted!"
-                          : "Submit Feedback"}
-                      </Button>
+                        <button
+                          type="submit"
+                          disabled={submitStatus === "sending" || submitStatus === "success"}
+                          className="px-6 py-2.5 bg-foreground text-background rounded-lg font-semibold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          {submitStatus === "sending" ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+                              Sending...
+                            </>
+                          ) : submitStatus === "success" ? (
+                            <>
+                              <CheckCircle className="w-4 h-4" />
+                              Sent!
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-4 h-4" />
+                              Send Message
+                            </>
+                          )}
+                        </button>
+                      </form>
+
+                      <div className="mt-8 pt-8 border-t border-border">
+                        <h3 className="text-sm font-semibold text-foreground mb-3">
+                          Other Ways to Reach Us
+                        </h3>
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          <p>
+                            <span className="font-medium text-foreground">Email:</span>{" "}
+                            <a href="mailto:support@dysumcorp.pro" className="text-primary hover:underline">
+                              support@dysumcorp.pro
+                            </a>
+                          </p>
+                          <p>
+                            <span className="font-medium text-foreground">Response Time:</span> Usually within 24 hours
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
 
-                  {/* Updates Section */}
-                  {activeTab === "updates" && (
-                    <div className="space-y-3">
-                      {notifications.map((notification) => (
+                  {/* FAQ Section */}
+                  {activeTab === "faq" && (
+                    <div className="max-w-3xl space-y-3">
+                      {faqs.map((faq, index) => (
                         <div
-                          key={notification.id}
-                          className="p-4 bg-muted rounded-xl border border-border"
+                          key={index}
+                          className="border border-border rounded-lg overflow-hidden bg-muted/30"
                         >
-                          <div className="flex items-start gap-3">
-                            <div
-                              className={`p-2 rounded-lg ${
-                                notification.type === "info"
-                                  ? "bg-blue-100 dark:bg-blue-950/30"
-                                  : notification.type === "warning"
-                                    ? "bg-yellow-100 dark:bg-yellow-950/30"
-                                    : "bg-emerald-100 dark:bg-emerald-950/30"
+                          <button
+                            onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+                            className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors"
+                          >
+                            <span className="font-semibold text-foreground pr-4">
+                              {faq.question}
+                            </span>
+                            <ChevronRight
+                              className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform ${
+                                expandedFaq === index ? "rotate-90" : ""
                               }`}
-                            >
-                              <Bell
-                                className={`w-4 h-4 ${
-                                  notification.type === "info"
-                                    ? "text-blue-600 dark:text-blue-400"
-                                    : notification.type === "warning"
-                                      ? "text-yellow-600 dark:text-yellow-400"
-                                      : "text-emerald-600 dark:text-emerald-400"
-                                }`}
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-foreground mb-1">
-                                {notification.title}
-                              </h3>
-                              <p className="text-sm text-muted-foreground mb-2">
-                                {notification.message}
-                              </p>
-                              <span className="text-xs text-muted-foreground">
-                                {notification.time}
-                              </span>
-                            </div>
-                          </div>
+                            />
+                          </button>
+                          <AnimatePresence>
+                            {expandedFaq === index && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="p-4 pt-0 text-sm text-muted-foreground border-t border-border bg-card">
+                                  {faq.answer}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       ))}
+
+                      <div className="mt-8 p-6 bg-muted/50 rounded-lg border border-border">
+                        <h3 className="font-semibold text-foreground mb-2">
+                          Can't find what you're looking for?
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Contact our support team and we'll be happy to help.
+                        </p>
+                        <button
+                          onClick={() => setActiveTab("contact")}
+                          className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-semibold hover:opacity-90 transition-all"
+                        >
+                          Contact Support
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
