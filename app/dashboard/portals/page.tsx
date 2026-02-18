@@ -448,11 +448,6 @@ export default function PortalsPage() {
                     <p className="text-xs text-muted-foreground truncate">
                       /{portal.slug}
                     </p>
-                    {portal.customDomain && (
-                      <p className="text-xs text-primary mt-1 truncate">
-                        {portal.customDomain}
-                      </p>
-                    )}
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                     {portal.isActive ? (
