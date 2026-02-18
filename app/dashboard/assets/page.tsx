@@ -342,8 +342,8 @@ export default function AssetsPage() {
               <div className="bg-card rounded-xl border border-border overflow-hidden">
                 {/* Card Header */}
                 <div className="p-4 sm:p-6 border-b border-border bg-muted/30">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                    <div>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <div className="min-w-0">
                       <h2 className="text-xl font-semibold text-foreground">
                         {tabs.find((t) => t.id === activeTab)?.name}
                       </h2>
@@ -351,7 +351,7 @@ export default function AssetsPage() {
                         {tabs.find((t) => t.id === activeTab)?.description}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         className="p-2 bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-border"
                         title="Refresh"
@@ -382,7 +382,7 @@ export default function AssetsPage() {
 
                   {/* Search Filters */}
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
+                    <div className="relative flex-1 min-w-0">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <input
                         type="text"
@@ -396,7 +396,7 @@ export default function AssetsPage() {
                       type="date"
                       value={dateFilter}
                       onChange={(e) => setDateFilter(e.target.value)}
-                      className="w-full sm:w-auto px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
+                      className="w-full sm:w-auto sm:flex-shrink-0 px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
                     />
                   </div>
                 </div>
@@ -419,11 +419,13 @@ export default function AssetsPage() {
                           {Object.entries(groupedByDate).map(([date, dateFiles]) => (
                             <div key={date}>
                               <div className="p-4 sm:p-6 bg-muted/30 border-b border-border">
-                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-primary" />
-                                  {date}
-                                  <span className="text-[10px] font-normal">({dateFiles.length} files)</span>
-                                </h3>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                                    {date}
+                                  </h3>
+                                  <span className="text-[10px] font-normal text-muted-foreground">({dateFiles.length} files)</span>
+                                </div>
                               </div>
                               <div className="divide-y divide-border">
                                 {dateFiles.map((file) => (
@@ -550,12 +552,12 @@ export default function AssetsPage() {
                         return (
                           <div key={provider}>
                             <div className="p-4 sm:p-6 bg-muted/30 border-b border-border">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className="p-2 bg-card rounded-lg border border-border">{getProviderIcon(provider)}</div>
-                                  <h3 className="font-bold text-foreground capitalize">{getStorageLabel(provider)}</h3>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="p-2 bg-card rounded-lg border border-border flex-shrink-0">{getProviderIcon(provider)}</div>
+                                  <h3 className="font-bold text-foreground capitalize truncate">{getStorageLabel(provider)}</h3>
                                 </div>
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex-shrink-0">
                                   {providerFiles.length} items
                                 </span>
                               </div>
