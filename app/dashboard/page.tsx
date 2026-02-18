@@ -466,11 +466,6 @@ export default function DashboardPage() {
                         <p className="text-xs text-text-muted truncate mt-1">
                           /{portal.slug}
                         </p>
-                        {portal.customDomain && (
-                          <p className="text-xs text-primary mt-1 truncate">
-                            {portal.customDomain}
-                          </p>
-                        )}
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                         <span className="text-xs px-2 py-1 rounded-md bg-accent-green/10 text-accent-green">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Type,
   Palette,
@@ -148,21 +148,21 @@ const StorageSection: React.FC<StorageSectionProps> = ({
   const [folders, setFolders] = useState<StorageFolder[]>([]);
   const [isRunningHealthCheck, setIsRunningHealthCheck] = useState(false);
   const [healthCheckResults, setHealthCheckResults] = useState<any>(null);
+  const hasInitializedStorage = useRef(false);
 
   useEffect(() => {
     fetchAccounts();
   }, []);
 
-  // Auto-initialize storage when accounts are loaded
+  // Auto-initialize storage when accounts are loaded (only once)
   useEffect(() => {
     if (
       !loadingAccounts &&
       accounts.length > 0 &&
-      (!formData.storageProvider ||
-        (!loadingFolders &&
-          folders.length === 0 &&
-          folderPath.length === 0))
+      !hasInitializedStorage.current &&
+      !formData.storageProvider
     ) {
+      hasInitializedStorage.current = true;
       const firstAccount = accounts[0];
       if (firstAccount) {
         const storageProvider =
@@ -170,13 +170,7 @@ const StorageSection: React.FC<StorageSectionProps> = ({
         selectStorageProvider(storageProvider);
       }
     }
-  }, [
-    loadingAccounts,
-    accounts,
-    formData.storageProvider,
-    folders.length,
-    folderPath.length,
-  ]);
+  }, [loadingAccounts, accounts]);
 
   async function fetchAccounts() {
     try {
@@ -985,7 +979,6 @@ export default function CreatePortalPage() {
     backgroundColor: "#ffffff",
     cardBackgroundColor: "#ffffff",
     logo: null as File | null,
-    customDomain: "",
 
     // Storage
     storageProvider: "google_drive" as "google_drive" | "dropbox",
@@ -1041,36 +1034,6 @@ export default function CreatePortalPage() {
     } catch (error) {
       console.error("Failed to fetch user plan:", error);
     }
-  };
-
-  const handleCustomDomainChange = async (value: string) => {
-    if (!session?.user?.id) return;
-
-    const response = await fetch("/api/plan-limits", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: session.user.id,
-        planType: userPlan,
-        checkType: "customDomain",
-      }),
-    });
-
-    const limitCheck = await response.json();
-
-    if (!limitCheck.allowed && value) {
-      showPaywall(
-        userPlan,
-        "Custom Domains",
-        limitCheck.reason ||
-          "Custom domains are not available on your current plan.",
-        "pro",
-      );
-
-      return;
-    }
-
-    updateFormData("customDomain", value);
   };
 
   const updateFormData = (field: string, value: any) => {
@@ -1373,7 +1336,6 @@ export default function CreatePortalPage() {
           backgroundColor: formData.backgroundColor,
           cardBackgroundColor: formData.cardBackgroundColor,
           logoUrl: logoUrl,
-          customDomain: formData.customDomain || null,
           
           // Storage
           storageProvider: formData.storageProvider,
@@ -1809,24 +1771,6 @@ export default function CreatePortalPage() {
                               </div>
                             </div>
                           </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-semibold text-foreground mb-2">
-                            Custom Domain (Optional)
-                          </label>
-                          <input
-                            className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:bg-card focus:ring-2 focus:ring-ring transition-all outline-none font-medium text-foreground"
-                            placeholder="e.g., portal.acmecorp.com"
-                            type="text"
-                            value={formData.customDomain}
-                            onChange={(e) =>
-                              handleCustomDomainChange(e.target.value)
-                            }
-                          />
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Configure DNS settings to point to your portal
-                          </p>
                         </div>
 
                         <div className="pt-4 flex justify-between">
