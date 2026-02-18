@@ -417,80 +417,80 @@ export default function AssetsPage() {
 
         {/* Content Area */}
         <main className="flex-1 min-w-0">
-          <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex gap-3 flex-1">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-2xl focus:ring-2 focus:ring-ring transition-all outline-none text-sm text-foreground"
-                  placeholder="Search assets..."
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <input
-                className="px-4 py-2.5 bg-card border border-border rounded-2xl focus:ring-2 focus:ring-ring transition-all outline-none text-sm text-foreground"
-                placeholder="Filter by date"
-                type="date"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                className="flex items-center gap-2 px-3 py-2 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-lg transition-colors text-sm font-medium border border-border"
-                title="Refresh page"
-                onClick={() => window.location.reload()}
-              >
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </button>
-
-              <div className="flex items-center gap-2 p-1 bg-muted border border-border rounded-xl w-fit">
-                <button
-                  className={`p-2 rounded-lg transition-all ${
-                    viewMode === "grid"
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  onClick={() => setViewMode("grid")}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  className={`p-2 rounded-lg transition-all ${
-                    viewMode === "list"
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  onClick={() => setViewMode("list")}
-                >
-                  <ListIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab + viewMode}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              initial={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="bg-bg-card rounded-[14px] border border-border shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-border bg-muted/30">
-                  <h2 className="text-xl font-bold text-foreground">
+          <div className="bg-bg-card rounded-[14px] border border-border overflow-hidden">
+            <div className="p-6 border-b border-border bg-muted/30">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">
                     {tabs.find((t) => t.id === activeTab)?.name}
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1">
                     {tabs.find((t) => t.id === activeTab)?.description}
                   </p>
                 </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="p-2 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-lg transition-colors border border-border"
+                    title="Refresh page"
+                    onClick={() => window.location.reload()}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                  <div className="flex items-center gap-2 p-1 bg-muted border border-border rounded-xl">
+                    <button
+                      className={`p-2 rounded-lg transition-all ${
+                        viewMode === "grid"
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      onClick={() => setViewMode("grid")}
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                    <button
+                      className={`p-2 rounded-lg transition-all ${
+                        viewMode === "list"
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      onClick={() => setViewMode("list")}
+                    >
+                      <ListIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-xl focus:ring-2 focus:ring-ring transition-all outline-none text-sm text-foreground"
+                    placeholder="Search assets..."
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <input
+                  className="w-full sm:w-auto px-4 py-2.5 bg-card border border-border rounded-xl focus:ring-2 focus:ring-ring transition-all outline-none text-sm text-foreground"
+                  placeholder="Filter by date"
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
+              </div>
+              </div>
 
-                <div className="p-0">
+            <div className="p-0">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab + viewMode}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.2 }}
+                >
                   {/* All Assets Tab */}
                   {activeTab === "all" && (
                     <div className="p-6">
@@ -907,10 +907,10 @@ export default function AssetsPage() {
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
         </main>
       </div>
     </div>
