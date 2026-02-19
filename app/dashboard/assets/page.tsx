@@ -20,6 +20,7 @@ import {
   Cloud,
   HardDrive,
 } from "lucide-react";
+import { getFileIcon, getFileIconColor } from "@/lib/file-icons";
 
 interface File {
   id: string;
@@ -174,18 +175,6 @@ export default function AssetsPage() {
     if (type === "dropbox") return <Cloud className="w-5 h-5 text-blue-500" />;
     if (type === "local") return <HardDrive className="w-5 h-5 text-gray-500" />;
     return <Server className="w-5 h-5 text-purple-500" />;
-  };
-
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType.startsWith("image/")) return "🖼️";
-    if (mimeType.startsWith("video/")) return "🎥";
-    if (mimeType.startsWith("audio/")) return "🎵";
-    if (mimeType.includes("pdf")) return "📄";
-    if (mimeType.includes("word") || mimeType.includes("document")) return "📝";
-    if (mimeType.includes("sheet") || mimeType.includes("excel")) return "📊";
-    if (mimeType.includes("presentation") || mimeType.includes("powerpoint")) return "📽️";
-    if (mimeType.includes("zip") || mimeType.includes("rar") || mimeType.includes("archive")) return "📦";
-    return "📎";
   };
 
   const formatFileSize = (bytes: string) => {
@@ -437,7 +426,9 @@ export default function AssetsPage() {
                                     key={file.id}
                                     className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-5 hover:bg-muted/50 transition-colors"
                                   >
-                                    <div className="text-2xl flex-shrink-0">{getFileIcon(file.mimeType)}</div>
+                                    <div className={`flex-shrink-0 ${getFileIconColor(file.mimeType)}`}>
+                                      {getFileIcon(file.mimeType, "w-6 h-6")}
+                                    </div>
                                     <div className="flex-1 min-w-0">
                                       <h4 className="font-semibold text-sm truncate">{file.name}</h4>
                                       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-1">
@@ -507,7 +498,9 @@ export default function AssetsPage() {
                                 className="bg-muted/50 rounded-lg border border-border hover:shadow-md transition-all p-4"
                               >
                                 <div className="flex justify-between items-start mb-3">
-                                  <div className="text-2xl">{getFileIcon(file.mimeType)}</div>
+                                  <div className={getFileIconColor(file.mimeType)}>
+                                    {getFileIcon(file.mimeType, "w-7 h-7")}
+                                  </div>
                                   <div className="flex gap-1">
                                     <button
                                       onClick={() => handleDownload(file)}
@@ -573,7 +566,9 @@ export default function AssetsPage() {
                                     key={file.id}
                                     className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-5 hover:bg-muted/50 transition-colors"
                                   >
-                                    <div className="text-2xl flex-shrink-0">{getFileIcon(file.mimeType)}</div>
+                                    <div className={`flex-shrink-0 ${getFileIconColor(file.mimeType)}`}>
+                                      {getFileIcon(file.mimeType, "w-6 h-6")}
+                                    </div>
                                     <div className="flex-1 min-w-0">
                                       <h4 className="font-semibold text-sm truncate">{file.name}</h4>
                                       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-1">
@@ -618,7 +613,9 @@ export default function AssetsPage() {
                                       className="bg-muted/50 rounded-lg border border-border hover:shadow-md transition-all p-3"
                                     >
                                       <div className="flex justify-between items-start mb-2">
-                                        <div className="text-xl">{getFileIcon(file.mimeType)}</div>
+                                        <div className={getFileIconColor(file.mimeType)}>
+                                          {getFileIcon(file.mimeType, "w-6 h-6")}
+                                        </div>
                                         <div className="flex gap-1">
                                           <button
                                             onClick={() => handleDownload(file)}

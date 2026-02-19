@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, FileText, X } from "lucide-react";
 import { Download, Calendar, Trash2, FolderOpen } from "lucide-react";
+import { getFileIcon, getFileIconColor } from "@/lib/file-icons";
 
 import { useSession } from "@/lib/auth-client";
 
@@ -220,25 +221,6 @@ export default function DashboardPage() {
     } finally {
       setDeletingFile(null);
     }
-  };
-
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType.startsWith("image/")) return "🖼️";
-    if (mimeType.startsWith("video/")) return "🎥";
-    if (mimeType.startsWith("audio/")) return "🎵";
-    if (mimeType.includes("pdf")) return "📄";
-    if (mimeType.includes("word") || mimeType.includes("document")) return "📝";
-    if (mimeType.includes("sheet") || mimeType.includes("excel")) return "📊";
-    if (mimeType.includes("presentation") || mimeType.includes("powerpoint"))
-      return "📽️";
-    if (
-      mimeType.includes("zip") ||
-      mimeType.includes("rar") ||
-      mimeType.includes("archive")
-    )
-      return "📦";
-
-    return "📎";
   };
 
   const formatFileSize = (bytes: string) => {
@@ -832,8 +814,8 @@ export default function DashboardPage() {
                       key={file.id}
                       className="flex items-center gap-3 p-3 bg-muted rounded-xl border border-border hover:bg-bg-card transition-colors"
                     >
-                      <span className="text-2xl">
-                        {getFileIcon(file.mimeType)}
+                      <span className={`flex-shrink-0 ${getFileIconColor(file.mimeType)}`}>
+                        {getFileIcon(file.mimeType, "w-5 h-5")}
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground text-sm truncate">
