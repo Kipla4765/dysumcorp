@@ -704,8 +704,8 @@ export default function DashboardPage() {
                       className="p-4 hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 mt-0.5">
-                          <FileText className="w-5 h-5 text-primary" />
+                        <div className={`flex-shrink-0 mt-0.5 ${getFileIconColor(file.mimeType)}`}>
+                          {getFileIcon(file.mimeType, "w-5 h-5")}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-text-white truncate">
