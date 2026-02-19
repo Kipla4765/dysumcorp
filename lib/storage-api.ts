@@ -36,6 +36,7 @@ export interface FileMetadata {
 
 /**
  * Get OAuth tokens for a user's storage provider
+ * Automatically refreshes expired tokens
  */
 export async function getStorageTokens(
   userId: string,
@@ -50,6 +51,37 @@ export async function getStorageTokens(
 
   if (!account || !account.accessToken) {
     return null;
+  }
+
+  // Check if token is expired
+  const isExpired = account.accessTokenExpiresAt && account.accessTokenExpiresAt <= new Date();
+
+  // Auto-refresh if expired and refresh token exists
+  if (isExpired && account.refreshToken) {
+    console.log(`[Storage API] Token expired for ${provider}, auto-refreshing...`);
+    const newAccessToken = await refreshStorageToken(userId, provider);
+    
+    if (newAccessToken) {
+      console.log(`[Storage API] Successfully refreshed token for ${provider}`);
+      // Fetch updated account data
+      const updatedAccount = await prisma.account.findFirst({
+        where: {
+          userId,
+          providerId: provider,
+        },
+      });
+
+      if (updatedAccount) {
+        return {
+          accessToken: updatedAccount.accessToken!,
+          refreshToken: updatedAccount.refreshToken || undefined,
+          accessTokenExpiresAt: updatedAccount.accessTokenExpiresAt || undefined,
+        };
+      }
+    } else {
+      console.log(`[Storage API] Failed to refresh token for ${provider}`);
+      return null;
+    }
   }
 
   return {
