@@ -1,229 +1,164 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Box, Twitter, Linkedin } from "lucide-react";
+
 export default function CTASection() {
   return (
     <>
-      <style jsx>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        .cta-section {
-          background: linear-gradient(180deg, #F5F8FA 0%, #E8EEF2 100%);
-          padding: 100px 20px;
-          position: relative;
-          overflow: hidden;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
-        .cta-section::before,
-        .cta-section::after {
-          content: '';
-          position: absolute;
-          background: rgba(255, 255, 255, 0.5);
-          border-radius: 50%;
-          pointer-events: none;
-        }
-
-        .cta-section::before {
-          width: 600px;
-          height: 600px;
-          top: -200px;
-          left: -150px;
-        }
-
-        .cta-section::after {
-          width: 500px;
-          height: 500px;
-          bottom: -150px;
-          right: -100px;
-        }
-
-        .cta-inner {
-          max-width: 900px;
-          margin: 0 auto;
-          text-align: center;
-          position: relative;
-          z-index: 1;
-          background: white;
-          border-radius: 24px;
-          padding: 60px 40px;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .cta-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          background: #f8f9fa;
-          border-radius: 100px;
-          padding: 8px 20px;
-          font-size: 13px;
-          font-weight: 600;
-          color: #666;
-          margin-bottom: 24px;
-        }
-
-        .cta-title {
-          font-size: clamp(32px, 5vw, 56px);
-          font-weight: 700;
-          color: #1a1a1a;
-          line-height: 1.2;
-          margin: 0 0 20px 0;
-          letter-spacing: -0.02em;
-        }
-
-        .cta-description {
-          font-size: 18px;
-          color: #4a4a4a;
-          line-height: 1.6;
-          margin: 0 0 40px 0;
-          max-width: 600px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-
-        .cta-buttons {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
-
-        .btn-primary {
-          background: #1a1a1a;
-          color: white;
-          border: none;
-          border-radius: 12px;
-          padding: 16px 32px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-          font-family: inherit;
-        }
-
-        .btn-primary:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-          background: #2a2a2a;
-        }
-
-        .btn-secondary {
-          background: white;
-          color: #1a1a1a;
-          border: 2px solid #e5e5e5;
-          border-radius: 12px;
-          padding: 16px 32px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-          font-family: inherit;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .btn-secondary:hover {
-          border-color: #1a1a1a;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-        }
-
-        .cta-features {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 32px;
-          margin-top: 48px;
-          flex-wrap: wrap;
-        }
-
-        .cta-feature {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          color: #666;
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .check-icon {
-          width: 20px;
-          height: 20px;
-          background: #1a1a1a;
-          color: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: 700;
-        }
-
-        @media (max-width: 768px) {
-          .cta-section {
-            padding: 60px 20px;
-          }
-
-          .cta-inner {
-            padding: 40px 24px;
-          }
-
-          .cta-features {
-            gap: 20px;
-          }
-        }
-      `}</style>
-
-      <section className="cta-section">
-        <div className="cta-inner">
-          <div className="cta-badge">
-            ✨ Start Free Today
-          </div>
-          <h2 className="cta-title">
-            Ready to transform your file collection?
-          </h2>
-          <p className="cta-description">
-            Join thousands of professionals who collect files 10x faster with Dysumcorp. 
-            No credit card required.
-          </p>
-          <div className="cta-buttons">
-            <button 
-              className="btn-primary"
-              onClick={() => window.location.href = '/auth'}
-            >
-              Create your portal free
-            </button>
-            <button 
-              className="btn-secondary"
-              onClick={() => window.location.href = '/pricing'}
-            >
-              View pricing
-            </button>
-          </div>
-          <div className="cta-features">
-            <div className="cta-feature">
-              <div className="check-icon">✓</div>
-              Free forever plan
+      {/* Final CTA Section */}
+      <section className="py-32 px-6">
+        <div className="max-w-6xl mx-auto bg-[#1c1917] rounded-[4rem] p-16 md:p-24 text-center text-stone-50 relative overflow-hidden">
+          <div className="relative z-10">
+            <span className="inline-block mb-6 px-6 py-2 bg-white/10 backdrop-blur rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border border-white/10">
+              Secure Document Exchange
+            </span>
+            <h2 className="text-5xl md:text-7xl font-bold mb-10 serif-font">
+              Ready to transform your file collection?
+            </h2>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+              <Button
+                onClick={() => (window.location.href = "/auth")}
+                className="w-full sm:w-auto px-12 py-6 bg-stone-50 text-[#1c1917] rounded-xl font-bold text-xl hover:scale-105 transition-transform premium-shadow"
+              >
+                Create portal free
+              </Button>
+              <Link
+                href="#pricing"
+                className="w-full sm:w-auto px-12 py-6 bg-white/5 backdrop-blur border border-white/20 rounded-xl font-bold text-xl hover:bg-white/10 transition-colors text-stone-100"
+              >
+                View pricing
+              </Link>
             </div>
-            <div className="cta-feature">
-              <div className="check-icon">✓</div>
-              No credit card needed
+          </div>
+          <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-white/[0.03] rounded-full blur-[100px] -mr-64 -mt-64"></div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-16 px-6 bg-[#fafaf9]">
+        <div className="max-w-7xl mx-auto border-t border-stone-200 pt-16">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-12">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-[#1c1917] rounded flex items-center justify-center">
+                  <Box className="text-stone-50 text-sm" />
+                </div>
+                <span className="serif-font font-bold text-xl tracking-tight text-[#1c1917]">
+                  dysumcorp
+                </span>
+              </div>
+              <p className="text-sm text-stone-600 max-w-xs leading-relaxed">
+                The enterprise-standard for secure client document collection
+                and cloud synchronization.
+              </p>
             </div>
-            <div className="cta-feature">
-              <div className="check-icon">✓</div>
-              Setup in 2 minutes
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-16">
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#1c1917]">
+                  Product
+                </h4>
+                <ul className="space-y-3">
+                  <li>
+                    <a
+                      href="#features"
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                    >
+                      Features
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#pricing"
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                    >
+                      Pricing
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                    >
+                      API
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#1c1917]">
+                  Legal
+                </h4>
+                <ul className="space-y-3">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                    >
+                      Privacy
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                    >
+                      Terms
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#security"
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                    >
+                      Security
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#1c1917]">
+                  Social
+                </h4>
+                <ul className="space-y-3">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors flex items-center gap-2"
+                    >
+                      <Twitter className="w-4 h-4" />
+                      Twitter
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors flex items-center gap-2"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                      LinkedIn
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-20 pt-10 border-t border-stone-100 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-xs text-stone-500 font-medium">
+              © 2024 Dysumcorp Inc. Crafted for excellence.
+            </p>
+            <div className="flex items-center gap-4">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">
+                System Status: Operational
+              </span>
             </div>
           </div>
         </div>
-      </section>
+      </footer>
     </>
   );
 }
-

@@ -94,7 +94,12 @@ export default function RootLayout({
 }) {
   return (
     <html suppressHydrationWarning lang="en">
-      <head />
+      <head>
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=zodiak@800,700,500,400&f[]=satoshi@700,500,400&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
         className={clsx(
           "min-h-screen text-foreground bg-background font-sans antialiased",
