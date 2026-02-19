@@ -149,47 +149,55 @@ export default function PublicPortalPage() {
         let storageUrl: string;
         let storageFileId: string;
 
-        if (uploadData.provider === "google") {
-          // Google Drive resumable upload
-          const uploadResponse = await new Promise<{url: string, id: string}>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
+        if (uploadData.provider === "google" && uploadData.method === "chunked") {
+          // Google Drive chunked upload through our server
+          const chunkSize = uploadData.chunkSize || 4 * 1024 * 1024; // 4MB chunks
+          const totalChunks = Math.ceil(file.size / chunkSize);
+          const sessionId = `${portal.id}-${Date.now()}-${Math.random()}`;
 
-            xhr.upload.addEventListener("progress", (e) => {
-              if (e.lengthComputable) {
-                const percentComplete = Math.round((e.loaded / e.total) * 100);
-                setFileProgress((prev) => ({ ...prev, [i]: percentComplete }));
-              }
+          console.log(`[Upload] Uploading ${file.name} in ${totalChunks} chunks`);
+
+          let uploadedBytes = 0;
+
+          for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+            const start = chunkIndex * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            const chunk = file.slice(start, end);
+
+            const chunkFormData = new FormData();
+            chunkFormData.append("chunk", chunk);
+            chunkFormData.append("portalId", portal.id);
+            chunkFormData.append("fileName", file.name);
+            chunkFormData.append("chunkIndex", chunkIndex.toString());
+            chunkFormData.append("totalChunks", totalChunks.toString());
+            chunkFormData.append("fileSize", file.size.toString());
+            chunkFormData.append("sessionId", sessionId);
+            chunkFormData.append("mimeType", file.type || "application/octet-stream");
+
+            const chunkResponse = await fetch("/api/portals/upload-chunk", {
+              method: "POST",
+              body: chunkFormData,
             });
 
-            xhr.addEventListener("load", () => {
-              if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                  const response = JSON.parse(xhr.responseText);
-                  resolve({
-                    url: response.webViewLink || response.id,
-                    id: response.id,
-                  });
-                } catch (e) {
-                  reject(new Error("Failed to parse upload response"));
-                }
-              } else {
-                reject(new Error(`Upload failed with status ${xhr.status}`));
-              }
-            });
+            if (!chunkResponse.ok) {
+              const errorData = await chunkResponse.json();
+              throw new Error(errorData.error || `Failed to upload chunk ${chunkIndex + 1}`);
+            }
 
-            xhr.addEventListener("error", () => {
-              reject(new Error("Network error during upload"));
-            });
+            const chunkResult = await chunkResponse.json();
 
-            xhr.open("PUT", uploadData.uploadUrl);
-            xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-            xhr.send(file);
-          });
+            uploadedBytes = end;
+            const percentComplete = Math.round((uploadedBytes / file.size) * 100);
+            setFileProgress((prev) => ({ ...prev, [i]: percentComplete }));
 
-          storageUrl = uploadResponse.url;
-          storageFileId = uploadResponse.id;
+            if (chunkResult.complete) {
+              storageUrl = chunkResult.storageUrl;
+              storageFileId = chunkResult.storageFileId;
+              console.log(`[Upload] Chunked upload complete for ${file.name}`);
+            }
+          }
         } else {
-          // Dropbox upload
+          // Dropbox upload (direct from browser)
           const uploadResponse = await new Promise<{url: string, id: string}>((resolve, reject) => {
             const xhr = new XMLHttpRequest();
 

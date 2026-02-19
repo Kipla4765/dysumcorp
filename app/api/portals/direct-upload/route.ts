@@ -78,45 +78,15 @@ export async function POST(request: NextRequest) {
     let uploadData: any = {};
 
     if (provider === "google") {
-      // Create resumable upload session for Google Drive
-      const folderPath = `${portal.name}/${fileName}`;
-      
-      const response = await fetch(
-        "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: folderPath,
-            mimeType: mimeType || "application/octet-stream",
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("[Portal Direct Upload] Failed to create Google Drive session:", errorText);
-        throw new Error("Failed to create upload session");
-      }
-
-      const uploadUrl = response.headers.get("Location");
-      
-      if (!uploadUrl) {
-        throw new Error("No upload URL returned from Google Drive");
-      }
-
+      // For Google Drive, use chunked upload through our server
+      // We'll upload in chunks to avoid the 4.5MB limit per request
       uploadData = {
-        uploadUrl,
-        method: "resumable",
-        headers: {
-          "Content-Type": mimeType || "application/octet-stream",
-        },
+        method: "chunked",
+        provider: "google",
+        chunkSize: 4 * 1024 * 1024, // 4MB chunks
       };
 
-      console.log("[Portal Direct Upload] Google Drive session created");
+      console.log("[Portal Direct Upload] Google Drive will use chunked upload");
     } else {
       // For Dropbox, return the access token (client will upload directly)
       uploadData = {
