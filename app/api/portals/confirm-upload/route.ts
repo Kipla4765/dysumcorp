@@ -1,53 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { sendFileUploadNotification } from "@/lib/email-service";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+
+import { PrismaClient } from "@/lib/generated/prisma/client";
 import { hashPassword } from "@/lib/password-utils";
-import {
-  getRateLimit,
-  uploadRateLimit,
-  fallbackUploadLimit,
-} from "@/lib/rate-limit";
+import { sendFileUploadNotification } from "@/lib/email-service";
 
-export const runtime = "nodejs";
-export const maxDuration = 60;
-export const dynamic = "force-dynamic";
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
+// Helper function to format file size
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
-// POST /api/portals/confirm-upload - Confirm direct upload and save metadata (public endpoint)
+// POST /api/portals/confirm-upload - Confirm file upload and save metadata
+// This endpoint doesn't require authentication - it's for public portal uploads
 export async function POST(request: NextRequest) {
   try {
-    const ip =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      "unknown";
-
-    const rateLimitResult = await getRateLimit(
-      uploadRateLimit,
-      fallbackUploadLimit,
-      `confirm:${ip}`,
-    );
-
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: "Too many upload requests. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "X-RateLimit-Limit": rateLimitResult.limit.toString(),
-            "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-            "X-RateLimit-Reset": rateLimitResult.reset.toString(),
-          },
-        },
-      );
-    }
-
     const body = await request.json();
     const {
       portalId,
@@ -56,33 +33,39 @@ export async function POST(request: NextRequest) {
       mimeType,
       storageUrl,
       storageFileId,
-      password,
+      provider,
       uploaderName,
       uploaderEmail,
+      password,
     } = body;
 
-    if (!portalId || !fileName || !fileSize) {
+    console.log("[Portal Confirm Upload] Request:", { 
+      portalId, 
+      fileName, 
+      fileSize, 
+      provider,
+      uploaderName,
+      uploaderEmail 
+    });
+
+    if (!portalId || !fileName || !fileSize || !storageUrl || !storageFileId) {
       return NextResponse.json(
-        { error: "Missing required fields: portalId, fileName, fileSize" },
-        { status: 400 },
+        { error: "Missing required fields" },
+        { status: 400 }
       );
     }
 
-    // Verify portal exists and is active
+    // Verify portal exists and get owner info
     const portal = await prisma.portal.findUnique({
       where: { id: portalId },
-      include: { user: true },
+      include: {
+        user: true,
+      },
     });
 
     if (!portal) {
+      console.log("[Portal Confirm Upload] Portal not found:", portalId);
       return NextResponse.json({ error: "Portal not found" }, { status: 404 });
-    }
-
-    if (!portal.isActive) {
-      return NextResponse.json(
-        { error: "Portal is not accepting uploads" },
-        { status: 403 },
-      );
     }
 
     // Hash password if provided
@@ -91,16 +74,14 @@ export async function POST(request: NextRequest) {
       passwordHash = hashPassword(password.trim());
     }
 
-    // Use storageFileId or storageUrl as the storage reference
-    const fileStorageUrl = storageFileId || storageUrl || "";
-
     // Save file metadata to database
+    console.log("[Portal Confirm Upload] Saving file metadata to database...");
     const file = await prisma.file.create({
       data: {
         name: fileName,
         size: BigInt(fileSize),
         mimeType: mimeType || "application/octet-stream",
-        storageUrl: fileStorageUrl,
+        storageUrl: storageUrl,
         portalId: portalId,
         passwordHash,
         uploaderName: uploaderName || null,
@@ -108,40 +89,44 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log("[Portal Confirm Upload] File metadata saved:", file.id);
+
     // Send email notification to portal owner
     try {
       await sendFileUploadNotification({
         userEmail: portal.user.email,
         portalName: portal.name,
-        files: [
-          {
-            name: fileName,
-            size: formatFileSize(Number(fileSize)),
-          },
-        ],
+        files: [{
+          name: fileName,
+          size: formatFileSize(fileSize),
+        }],
         uploaderName: uploaderName || undefined,
       });
+      console.log("[Portal Confirm Upload] Email notification sent");
     } catch (emailError) {
-      console.error("Failed to send email notification:", emailError);
+      console.error("[Portal Confirm Upload] Failed to send email notification:", emailError);
+      // Don't fail the upload if email fails
     }
 
     return NextResponse.json({
       success: true,
       file: {
         ...file,
-        size: file.size.toString(),
+        size: file.size.toString(), // Convert BigInt to string for JSON
       },
-      rateLimit: {
-        limit: rateLimitResult.limit,
-        remaining: rateLimitResult.remaining,
-        reset: rateLimitResult.reset,
-      },
+      provider,
     });
   } catch (error) {
-    console.error("Confirm upload error:", error);
+    console.error("[Portal Confirm Upload] Error:", error);
+    
+    const errorMessage = error instanceof Error ? error.message : "Failed to confirm upload";
+    
     return NextResponse.json(
-      { error: "Failed to confirm upload" },
-      { status: 500 },
+      { 
+        error: "Failed to confirm upload",
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
+      { status: 500 }
     );
   }
 }

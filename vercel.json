@@ -6,6 +6,12 @@
     "app/api/portals/upload/route.ts": {
       "maxDuration": 60
     },
+    "app/api/portals/direct-upload/route.ts": {
+      "maxDuration": 10
+    },
+    "app/api/portals/confirm-upload/route.ts": {
+      "maxDuration": 10
+    },
     "app/api/storage/direct-upload/route.ts": {
       "maxDuration": 10
     },

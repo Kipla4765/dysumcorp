@@ -71,62 +71,42 @@ export default function PublicPortalPage() {
   const handleUpload = async () => {
     if (files.length === 0) {
       setErrorMessage("Please select at least one file");
-
       return;
     }
 
     if (!uploaderName.trim()) {
       setErrorMessage("Please enter your name");
-
       return;
     }
 
     if (!uploaderEmail.trim()) {
       setErrorMessage("Please enter your email");
-
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!emailRegex.test(uploaderEmail)) {
       setErrorMessage("Please enter a valid email address");
-
       return;
     }
 
-    // Check file sizes
-    // Note: Portal allows up to portal.maxFileSize, but current implementation
-    // is limited by Vercel's 4.5MB API route body size limit
-    // TODO: Implement direct upload to cloud storage for files > 4MB
-    const portalMaxSize = parseInt(portal.maxFileSize); // in bytes
-    const apiRouteLimit = 4 * 1024 * 1024; // 4MB - Vercel's limit
-    const effectiveLimit = Math.min(portalMaxSize, apiRouteLimit);
+    if (!portal) {
+      setErrorMessage("Portal information not loaded");
+      return;
+    }
+
+    // Check file sizes against portal limit
+    const portalMaxSize = parseInt(portal.maxFileSize);
+    const oversizedFiles = files.filter(f => f.size > portalMaxSize);
     
-    const oversizedForPortal = files.filter(f => f.size > portalMaxSize);
-    const oversizedForApi = files.filter(f => f.size > apiRouteLimit && f.size <= portalMaxSize);
-    
-    if (oversizedForPortal.length > 0) {
-      const fileList = oversizedForPortal.map(f => 
+    if (oversizedFiles.length > 0) {
+      const fileList = oversizedFiles.map(f => 
         `${f.name} (${(f.size / 1024 / 1024).toFixed(2)} MB)`
       ).join(', ');
       
       setErrorMessage(
         `The following files exceed the portal's ${(portalMaxSize / 1024 / 1024).toFixed(0)}MB size limit: ${fileList}`
-      );
-      return;
-    }
-    
-    if (oversizedForApi.length > 0) {
-      const fileList = oversizedForApi.map(f => 
-        `${f.name} (${(f.size / 1024 / 1024).toFixed(2)} MB)`
-      ).join(', ');
-      
-      setErrorMessage(
-        `The following files exceed the current 4MB upload limit: ${fileList}. ` +
-        `This portal allows files up to ${(portalMaxSize / 1024 / 1024).toFixed(0)}MB, but the upload system ` +
-        `currently supports files up to 4MB. Please contact the portal owner for alternative upload methods.`
       );
       return;
     }
@@ -137,54 +117,151 @@ export default function PublicPortalPage() {
     setErrorMessage("");
 
     try {
-      // Upload files one by one with individual progress tracking
+      // Upload files one by one with direct upload to cloud storage
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const formData = new FormData();
-
-        formData.append("files", file);
-        formData.append("portalId", portal!.id);
-        formData.append("uploaderName", uploaderName.trim());
-        formData.append("uploaderEmail", uploaderEmail.trim());
-
-        // Use XMLHttpRequest for progress tracking
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-
-          xhr.upload.addEventListener("progress", (e) => {
-            if (e.lengthComputable) {
-              const percentComplete = Math.round((e.loaded / e.total) * 100);
-
-              setFileProgress((prev) => ({ ...prev, [i]: percentComplete }));
-            }
-          });
-
-          xhr.addEventListener("load", () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              setFileProgress((prev) => ({ ...prev, [i]: 100 }));
-              resolve();
-            } else {
-              try {
-                const data = JSON.parse(xhr.responseText);
-
-                setErrorMessage(data.error || `Failed to upload ${file.name}`);
-              } catch {
-                setErrorMessage(`Failed to upload ${file.name}`);
-              }
-              setUploadStatus("error");
-              reject(new Error("Upload failed"));
-            }
-          });
-
-          xhr.addEventListener("error", () => {
-            setErrorMessage(`Failed to upload ${file.name}. Please try again.`);
-            setUploadStatus("error");
-            reject(new Error("Upload failed"));
-          });
-
-          xhr.open("POST", "/api/portals/upload");
-          xhr.send(formData);
+        
+        console.log(`[Upload] Starting upload for file ${i + 1}/${files.length}: ${file.name}`);
+        
+        // Step 1: Get upload URL/credentials
+        setFileProgress((prev) => ({ ...prev, [i]: 0 }));
+        
+        const directUploadResponse = await fetch("/api/portals/direct-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileSize: file.size,
+            mimeType: file.type || "application/octet-stream",
+            portalId: portal.id,
+          }),
         });
+
+        if (!directUploadResponse.ok) {
+          const errorData = await directUploadResponse.json();
+          throw new Error(errorData.error || "Failed to prepare upload");
+        }
+
+        const uploadData = await directUploadResponse.json();
+        console.log(`[Upload] Upload credentials received for ${file.name}, provider: ${uploadData.provider}`);
+
+        // Step 2: Upload directly to cloud storage
+        let storageUrl: string;
+        let storageFileId: string;
+
+        if (uploadData.provider === "google") {
+          // Google Drive resumable upload
+          const uploadResponse = await new Promise<{url: string, id: string}>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener("progress", (e) => {
+              if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                setFileProgress((prev) => ({ ...prev, [i]: percentComplete }));
+              }
+            });
+
+            xhr.addEventListener("load", () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                  const response = JSON.parse(xhr.responseText);
+                  resolve({
+                    url: response.webViewLink || response.id,
+                    id: response.id,
+                  });
+                } catch (e) {
+                  reject(new Error("Failed to parse upload response"));
+                }
+              } else {
+                reject(new Error(`Upload failed with status ${xhr.status}`));
+              }
+            });
+
+            xhr.addEventListener("error", () => {
+              reject(new Error("Network error during upload"));
+            });
+
+            xhr.open("PUT", uploadData.uploadUrl);
+            xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+            xhr.send(file);
+          });
+
+          storageUrl = uploadResponse.url;
+          storageFileId = uploadResponse.id;
+        } else {
+          // Dropbox upload
+          const uploadResponse = await new Promise<{url: string, id: string}>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener("progress", (e) => {
+              if (e.lengthComputable) {
+                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                setFileProgress((prev) => ({ ...prev, [i]: percentComplete }));
+              }
+            });
+
+            xhr.addEventListener("load", () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                  const response = JSON.parse(xhr.responseText);
+                  resolve({
+                    url: response.id,
+                    id: response.id,
+                  });
+                } catch (e) {
+                  reject(new Error("Failed to parse upload response"));
+                }
+              } else {
+                reject(new Error(`Upload failed with status ${xhr.status}`));
+              }
+            });
+
+            xhr.addEventListener("error", () => {
+              reject(new Error("Network error during upload"));
+            });
+
+            xhr.open("POST", "https://content.dropboxapi.com/2/files/upload");
+            xhr.setRequestHeader("Authorization", `Bearer ${uploadData.accessToken}`);
+            xhr.setRequestHeader("Content-Type", "application/octet-stream");
+            xhr.setRequestHeader("Dropbox-API-Arg", JSON.stringify({
+              path: uploadData.path,
+              mode: "add",
+              autorename: true,
+              mute: false,
+            }));
+            xhr.send(file);
+          });
+
+          storageUrl = uploadResponse.url;
+          storageFileId = uploadResponse.id;
+        }
+
+        console.log(`[Upload] File uploaded to ${uploadData.provider}: ${file.name}`);
+
+        // Step 3: Confirm upload and save metadata
+        const confirmResponse = await fetch("/api/portals/confirm-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            portalId: portal.id,
+            fileName: file.name,
+            fileSize: file.size,
+            mimeType: file.type || "application/octet-stream",
+            storageUrl,
+            storageFileId,
+            provider: uploadData.provider,
+            uploaderName: uploaderName.trim(),
+            uploaderEmail: uploaderEmail.trim(),
+          }),
+        });
+
+        if (!confirmResponse.ok) {
+          const errorData = await confirmResponse.json();
+          throw new Error(errorData.error || "Failed to confirm upload");
+        }
+
+        console.log(`[Upload] Upload confirmed for ${file.name}`);
+        setFileProgress((prev) => ({ ...prev, [i]: 100 }));
       }
 
       // All files uploaded successfully
@@ -195,10 +272,9 @@ export default function PublicPortalPage() {
       setFileProgress({});
     } catch (error) {
       console.error("Upload failed:", error);
-      if (uploadStatus !== "error") {
-        setErrorMessage("Upload failed. Please try again.");
-        setUploadStatus("error");
-      }
+      const errorMsg = error instanceof Error ? error.message : "Upload failed. Please try again.";
+      setErrorMessage(errorMsg);
+      setUploadStatus("error");
     } finally {
       setUploading(false);
     }
@@ -309,12 +385,7 @@ export default function PublicPortalPage() {
                   Drag and drop files here, or click to select
                 </p>
                 <p className="text-sm text-muted-foreground font-mono mb-4">
-                  Maximum file size: {portal ? `${(parseInt(portal.maxFileSize) / 1024 / 1024).toFixed(0)}MB` : '4MB'} per file
-                  {portal && parseInt(portal.maxFileSize) > 4 * 1024 * 1024 && (
-                    <span className="block text-xs mt-1 text-yellow-600 dark:text-yellow-400">
-                      (Current upload system supports up to 4MB)
-                    </span>
-                  )}
+                  Maximum file size: {portal ? `${(parseInt(portal.maxFileSize) / 1024 / 1024).toFixed(0)}MB` : 'Loading...'} per file
                 </p>
                 <Input
                   multiple
@@ -343,10 +414,7 @@ export default function PublicPortalPage() {
                   <div className="space-y-2">
                     {files.map((file, index) => {
                       const portalMaxSize = parseInt(portal.maxFileSize);
-                      const apiRouteLimit = 4 * 1024 * 1024; // 4MB
-                      const isOversizedForPortal = file.size > portalMaxSize;
-                      const isOversizedForApi = file.size > apiRouteLimit && file.size <= portalMaxSize;
-                      const isOversized = isOversizedForPortal || isOversizedForApi;
+                      const isOversized = file.size > portalMaxSize;
                       
                       return (
                         <div
@@ -378,8 +446,7 @@ export default function PublicPortalPage() {
                                   : 'text-muted-foreground'
                               }`}>
                                 {(file.size / 1024 / 1024).toFixed(2)} MB
-                                {isOversizedForPortal && ` (Portal Max: ${(portalMaxSize / 1024 / 1024).toFixed(0)}MB)`}
-                                {isOversizedForApi && ` (Current Limit: 4MB, Portal Allows: ${(portalMaxSize / 1024 / 1024).toFixed(0)}MB)`}
+                                {isOversized && ` (Max: ${(portalMaxSize / 1024 / 1024).toFixed(0)}MB)`}
                               </p>
                             </div>
                             {uploading && fileProgress[index] !== undefined && (
@@ -402,20 +469,10 @@ export default function PublicPortalPage() {
                   </div>
                   
                   {/* Oversized files warning */}
-                  {portal && files.some(f => {
-                    const portalMaxSize = parseInt(portal.maxFileSize);
-                    const apiRouteLimit = 4 * 1024 * 1024;
-                    return f.size > portalMaxSize || (f.size > apiRouteLimit && f.size <= portalMaxSize);
-                  }) && (
+                  {portal && files.some(f => f.size > parseInt(portal.maxFileSize)) && (
                     <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
                       <p className="text-red-700 dark:text-red-400 font-mono text-xs">
-                        ⚠️ Some files exceed size limits. 
-                        {files.some(f => f.size > parseInt(portal.maxFileSize)) && 
-                          ` Portal maximum: ${(parseInt(portal.maxFileSize) / 1024 / 1024).toFixed(0)}MB.`
-                        }
-                        {files.some(f => f.size > 4 * 1024 * 1024 && f.size <= parseInt(portal.maxFileSize)) && 
-                          ` Current upload system supports up to 4MB. Contact portal owner for larger files.`
-                        }
+                        ⚠️ Some files exceed the portal's {(parseInt(portal.maxFileSize) / 1024 / 1024).toFixed(0)}MB size limit. Please remove them before uploading.
                       </p>
                     </div>
                   )}
@@ -439,11 +496,7 @@ export default function PublicPortalPage() {
                   uploading ||
                   !uploaderName.trim() ||
                   !uploaderEmail.trim() ||
-                  (portal && files.some(f => {
-                    const portalMaxSize = parseInt(portal.maxFileSize);
-                    const apiRouteLimit = 4 * 1024 * 1024;
-                    return f.size > portalMaxSize || f.size > apiRouteLimit;
-                  }))
+                  (portal && files.some(f => f.size > parseInt(portal.maxFileSize)))
                 }
                 onClick={handleUpload}
               >
