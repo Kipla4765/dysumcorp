@@ -40,6 +40,8 @@ function formatFileSize(bytes: number): string {
 }
 
 // POST /api/portals/upload - Upload files to a portal (public endpoint)
+// NOTE: This endpoint has a 4.5MB body size limit due to Vercel/Next.js constraints
+// For files larger than 4MB, clients should be directed to use a different method
 export async function POST(request: NextRequest) {
   try {
     // Apply rate limiting based on IP address
@@ -72,6 +74,23 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("[Portal Upload] Starting upload process...");
+    
+    // Check content length before parsing
+    const contentLength = request.headers.get("content-length");
+    const MAX_SIZE = 4.5 * 1024 * 1024; // 4.5MB Vercel limit
+    
+    if (contentLength && parseInt(contentLength) > MAX_SIZE) {
+      console.log(`[Portal Upload] File too large: ${contentLength} bytes (max: ${MAX_SIZE})`);
+      return NextResponse.json(
+        { 
+          error: "File too large. Maximum file size is 4MB for direct uploads.",
+          maxSize: MAX_SIZE,
+          receivedSize: parseInt(contentLength)
+        },
+        { status: 413 },
+      );
+    }
+    
     const formData = await request.formData();
     console.log("[Portal Upload] FormData parsed successfully");
     const portalId = formData.get("portalId") as string;
