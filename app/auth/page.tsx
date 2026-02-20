@@ -22,36 +22,26 @@ export default function AuthPage() {
   const handleOAuthSignIn = async (provider: "google" | "dropbox") => {
     setLoading(provider);
 
-    console.log("Starting OAuth for:", provider);
-
     try {
-      const result = await signIn.social({
-        provider,
-        callbackURL: "/dashboard",
+      const response = await fetch("/api/auth/sign-in/social", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider, callbackURL: "/dashboard" }),
       });
 
-      console.log("OAuth result:", result);
-
-      if (result.error) {
-        console.error("OAuth sign in error:", result.error);
-        setLoading(null);
+      const location = response.headers.get("location");
+      if (location) {
+        window.location.href = location;
         return;
       }
 
-      let url: string | undefined;
-      const data = result.data as unknown;
-      if (typeof data === "string") {
-        const parsed = JSON.parse(data);
-        url = parsed.url;
-      } else if (data && typeof data === "object" && "url" in data) {
-        url = (data as { url: string }).url;
-      }
-
-      if (url) {
-        console.log("Redirecting to:", url);
-        window.location.href = url;
+      const data = await response.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (data?.data?.url) {
+        window.location.href = data.data.url;
       } else {
-        console.log("No URL returned, result:", result);
+        console.error("No redirect URL found:", data);
         setLoading(null);
       }
     } catch (err) {
