@@ -19,17 +19,20 @@ export default function AuthPage() {
     }
   }, [session, router]);
 
-  const handleOAuthSignIn = async (provider: "google" | "dropbox") => {
+  const handleOAuthSignIn = (provider: "google" | "dropbox") => {
     setLoading(provider);
-    try {
-      await signIn.social({
+    signIn
+      .social({
         provider,
         callbackURL: "/dashboard",
+      })
+      .catch((err) => {
+        console.error("OAuth sign in failed:", err);
+        setLoading(null);
       });
-    } catch (err: any) {
-      console.error("OAuth sign in failed:", err);
-      setLoading(null);
-    }
+    setTimeout(() => {
+      setLoading((prev) => (prev ? null : prev));
+    }, 5000);
   };
 
   return (

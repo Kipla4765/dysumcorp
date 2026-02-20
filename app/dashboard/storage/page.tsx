@@ -49,17 +49,20 @@ export default function StoragePage() {
     }
   };
 
-  const handleConnect = async (provider: "google" | "dropbox") => {
+  const handleConnect = (provider: "google" | "dropbox") => {
     setActionLoading(provider);
-    try {
-      await signIn.social({
+    signIn
+      .social({
         provider,
         callbackURL: "/dashboard/storage",
+      })
+      .catch((err) => {
+        console.error("Failed to connect:", err);
+        setActionLoading(null);
       });
-    } catch (error) {
-      console.error("Failed to connect:", error);
-      setActionLoading(null);
-    }
+    setTimeout(() => {
+      setActionLoading((prev) => (prev ? null : prev));
+    }, 5000);
   };
 
   const handleDisconnect = async (provider: "google" | "dropbox") => {
