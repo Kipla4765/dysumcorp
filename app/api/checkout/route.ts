@@ -87,11 +87,20 @@ export async function POST(request: Request) {
     });
 
     // Use Creem server-side SDK to create checkout
-    // Note: Creem API only accepts one of customer.id OR customer.email, not both
+    // Use test mode if using a test API key or in development
+    const isTestKey = process.env.CREEM_API_KEY?.startsWith("creem_test_");
+    const useTestMode = process.env.NODE_ENV === "development" || isTestKey;
+
+    console.log("🔍 Creem mode:", {
+      isTestKey,
+      useTestMode,
+      nodeEnv: process.env.NODE_ENV,
+    });
+
     const result = await createCheckout(
       {
         apiKey: process.env.CREEM_API_KEY!,
-        testMode: process.env.NODE_ENV === "development",
+        testMode: useTestMode,
       },
       {
         productId,
@@ -140,17 +149,22 @@ export async function POST(request: Request) {
 
     // Check for common error patterns
     if (error?.message?.includes("API key")) {
-      errorMessage = "Payment system configuration error. Please contact support.";
+      errorMessage =
+        "Payment system configuration error. Please contact support.";
     } else if (error?.message?.includes("product")) {
       errorMessage = "Invalid product configuration. Please contact support.";
-    } else if (error?.message?.includes("network") || error?.message?.includes("fetch")) {
+    } else if (
+      error?.message?.includes("network") ||
+      error?.message?.includes("fetch")
+    ) {
       errorMessage = "Unable to connect to payment service. Please try again.";
     }
 
     return NextResponse.json(
       {
         error: errorMessage,
-        details: process.env.NODE_ENV === "development" ? error?.message : undefined
+        details:
+          process.env.NODE_ENV === "development" ? error?.message : undefined,
       },
       { status: 500 },
     );
