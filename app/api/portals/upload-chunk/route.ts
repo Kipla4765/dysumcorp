@@ -59,6 +59,10 @@ export async function POST(request: NextRequest) {
         id: true,
         name: true,
         userId: true,
+        storageProvider: true,
+        storageFolderId: true,
+        storageFolderPath: true,
+        useClientFolders: true,
       },
     });
 
@@ -66,18 +70,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Portal not found" }, { status: 404 });
     }
 
-    // Get access token
-    const accessToken = await getValidToken(portal.userId, "google");
+    // Get access token based on portal's storage provider
+    let accessToken = await getValidToken(portal.userId, "google");
+    let provider: "google" | "dropbox" = "google";
+
+    if (!accessToken) {
+      accessToken = await getValidToken(portal.userId, "dropbox");
+      provider = "dropbox";
+    }
 
     if (!accessToken) {
       return NextResponse.json(
-        { error: "Google Drive not connected" },
+        { error: "No storage connected" },
         { status: 400 },
       );
     }
 
+    // Determine the parent folder for uploads
+    const parentFolderId = portal.storageFolderId || "root";
+
     // First chunk: create resumable upload session
     if (chunkIndex === 0) {
+      // Build the upload path
+      const uploadPath = portal.storageFolderPath
+        ? `${portal.storageFolderPath}/${fileName}`
+        : `${portal.name}/${fileName}`;
+
+      const metadata: any = {
+        name: fileName,
+        mimeType: formData.get("mimeType") || "application/octet-stream",
+      };
+
+      // Set parent folder if available
+      if (parentFolderId && parentFolderId !== "root") {
+        metadata.parents = [parentFolderId];
+      }
+
       const response = await fetch(
         "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable",
         {
@@ -87,10 +115,7 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
             "X-Upload-Content-Length": fileSize.toString(),
           },
-          body: JSON.stringify({
-            name: `${portal.name}/${fileName}`,
-            mimeType: formData.get("mimeType") || "application/octet-stream",
-          }),
+          body: JSON.stringify(metadata),
         },
       );
 

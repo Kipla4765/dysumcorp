@@ -23,18 +23,41 @@ export async function GET(
         slug: true,
         customDomain: true,
         whiteLabeled: true,
-        maxFileSize: true,
-        allowedFileTypes: true,
+        isActive: true,
+        // Branding
+        primaryColor: true,
+        textColor: true,
+        backgroundColor: true,
+        cardBackgroundColor: true,
+        logoUrl: true,
+        // Storage
+        storageProvider: true,
+        storageFolderId: true,
+        storageFolderPath: true,
+        useClientFolders: true,
+        // Security
+        password: true,
         requireClientName: true,
         requireClientEmail: true,
+        maxFileSize: true,
+        allowedFileTypes: true,
+        // Messaging
         welcomeMessage: true,
         submitButtonText: true,
-        userId: true, // Needed to get storage credentials
+        successMessage: true,
+        userId: true,
       },
     });
 
     if (!portal) {
       return NextResponse.json({ error: "Portal not found" }, { status: 404 });
+    }
+
+    if (!portal.isActive) {
+      return NextResponse.json(
+        { error: "Portal is not active" },
+        { status: 403 },
+      );
     }
 
     // Serialize BigInt

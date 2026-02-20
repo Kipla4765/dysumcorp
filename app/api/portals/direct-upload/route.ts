@@ -37,6 +37,9 @@ export async function POST(request: NextRequest) {
         name: true,
         userId: true,
         maxFileSize: true,
+        storageProvider: true,
+        storageFolderId: true,
+        useClientFolders: true,
       },
     });
 
@@ -64,18 +67,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get cloud storage token for portal owner (Google Drive or Dropbox)
+    // Get cloud storage token for portal owner based on portal's storageProvider setting
     console.log(
-      "[Portal Direct Upload] Getting storage token for user:",
-      portal.userId,
+      "[Portal Direct Upload] Portal storage provider:",
+      portal.storageProvider,
     );
-    let accessToken = await getValidToken(portal.userId, "google");
-    let provider: "google" | "dropbox" = "google";
 
-    if (!accessToken) {
-      console.log("[Portal Direct Upload] No Google Drive, trying Dropbox...");
+    // Determine provider from portal settings, with fallback
+    let provider: "google" | "dropbox" = "google";
+    let accessToken: string | null = null;
+
+    // Try the portal's configured provider first
+    if (portal.storageProvider === "google_drive") {
+      accessToken = await getValidToken(portal.userId, "google");
+      provider = "google";
+    } else if (portal.storageProvider === "dropbox") {
       accessToken = await getValidToken(portal.userId, "dropbox");
       provider = "dropbox";
+    }
+
+    // Fallback to other provider if configured one isn't available
+    if (!accessToken) {
+      if (portal.storageProvider === "google_drive") {
+        console.log(
+          "[Portal Direct Upload] Google Drive not available, trying Dropbox...",
+        );
+        accessToken = await getValidToken(portal.userId, "dropbox");
+        provider = "dropbox";
+      } else if (portal.storageProvider === "dropbox") {
+        console.log(
+          "[Portal Direct Upload] Dropbox not available, trying Google Drive...",
+        );
+        accessToken = await getValidToken(portal.userId, "google");
+        provider = "google";
+      } else {
+        // No storage provider configured, try both
+        accessToken = await getValidToken(portal.userId, "google");
+        provider = "google";
+        if (!accessToken) {
+          accessToken = await getValidToken(portal.userId, "dropbox");
+          provider = "dropbox";
+        }
+      }
     }
 
     if (!accessToken) {
@@ -123,6 +156,8 @@ export async function POST(request: NextRequest) {
       provider,
       portalId,
       fileName,
+      storageFolderId: portal.storageFolderId,
+      useClientFolders: portal.useClientFolders,
       ...uploadData,
     });
   } catch (error) {
