@@ -39,11 +39,12 @@ export default function AuthPage() {
       }
 
       let url: string | undefined;
-      if (typeof result.data === "string") {
-        const parsed = JSON.parse(result.data);
+      const data = result.data as unknown;
+      if (typeof data === "string") {
+        const parsed = JSON.parse(data);
         url = parsed.url;
-      } else if (result.data?.url) {
-        url = result.data.url;
+      } else if (data && typeof data === "object" && "url" in data) {
+        url = (data as { url: string }).url;
       }
 
       if (url) {
