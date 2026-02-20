@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Box } from "lucide-react";
 import Link from "next/link";
 
-import { signIn, useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 
 export default function AuthPage() {
@@ -23,23 +23,43 @@ export default function AuthPage() {
     setLoading(provider);
 
     try {
-      const result: any = await signIn.social({
-        provider,
-        callbackURL: "/dashboard",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/auth/sign-in/social`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            provider,
+            callbackURL: "/dashboard",
+          }),
+          credentials: "include",
+        },
+      );
 
-      if (result?.data?.url) {
-        window.location.href = result.data.url;
-      } else if (result?.url) {
-        window.location.href = result.url;
-      } else if (result?.error) {
-        console.error("OAuth error:", result.error);
+      const data = await response.json();
+      console.log("OAuth response:", data);
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (data?.data?.url) {
+        window.location.href = data.data.url;
+      } else if (data?.error) {
+        console.error("OAuth error:", data.error);
+        setLoading(null);
+      } else {
+        console.error("Unexpected response:", data);
         setLoading(null);
       }
     } catch (err: any) {
       console.error("OAuth sign in failed:", err);
       setLoading(null);
     }
+
+    setTimeout(() => {
+      setLoading((prev) => (prev ? null : prev));
+    }, 10000);
   };
 
   return (
