@@ -38,9 +38,17 @@ export default function AuthPage() {
         return;
       }
 
-      if (result.data?.url) {
-        console.log("Redirecting to:", result.data.url);
-        window.location.href = result.data.url;
+      let url: string | undefined;
+      if (typeof result.data === "string") {
+        const parsed = JSON.parse(result.data);
+        url = parsed.url;
+      } else if (result.data?.url) {
+        url = result.data.url;
+      }
+
+      if (url) {
+        console.log("Redirecting to:", url);
+        window.location.href = url;
       } else {
         console.log("No URL returned, result:", result);
         setLoading(null);
