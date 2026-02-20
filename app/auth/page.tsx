@@ -21,10 +21,19 @@ export default function AuthPage() {
 
   const handleOAuthSignIn = (provider: "google" | "dropbox") => {
     setLoading(provider);
+    console.log("Starting OAuth sign in for:", provider);
     signIn
       .social({
         provider,
         callbackURL: "/dashboard",
+        errorCallbackURL: "/auth?error=signin_failed",
+      })
+      .then((response) => {
+        console.log("OAuth response:", response);
+        const data = response?.data;
+        if (data && "redirect" in data && data.redirect && data.url) {
+          window.location.href = data.url;
+        }
       })
       .catch((err) => {
         console.error("OAuth sign in failed:", err);

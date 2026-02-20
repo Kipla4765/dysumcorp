@@ -55,6 +55,13 @@ export default function StoragePage() {
       .social({
         provider,
         callbackURL: "/dashboard/storage",
+        errorCallbackURL: "/dashboard/storage?error=connection_failed",
+      })
+      .then((response) => {
+        const data = response?.data;
+        if (data && "redirect" in data && data.redirect && data.url) {
+          window.location.href = data.url;
+        }
       })
       .catch((err) => {
         console.error("Failed to connect:", err);
