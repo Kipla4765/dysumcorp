@@ -58,8 +58,11 @@ export default function StoragePage() {
         errorCallbackURL: "/dashboard/storage?error=connection_failed",
       })
       .then((response) => {
-        const data = response?.data;
-        if (data && "redirect" in data && data.redirect && data.url) {
+        let data = response?.data;
+        if (typeof data === "string") {
+          data = JSON.parse(data);
+        }
+        if (data?.url) {
           window.location.href = data.url;
         }
       })

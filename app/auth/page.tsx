@@ -29,9 +29,13 @@ export default function AuthPage() {
         errorCallbackURL: "/auth?error=signin_failed",
       })
       .then((response) => {
-        console.log("OAuth response:", response);
-        const data = response?.data;
-        if (data && "redirect" in data && data.redirect && data.url) {
+        console.log("OAuth raw response:", response);
+        let data = response?.data;
+        if (typeof data === "string") {
+          data = JSON.parse(data);
+        }
+        console.log("OAuth parsed data:", data);
+        if (data?.url) {
           window.location.href = data.url;
         }
       })
