@@ -23,10 +23,20 @@ export default function AuthPage() {
     setLoading(provider);
 
     try {
-      await signIn.social({
+      const { data, error } = await signIn.social({
         provider,
         callbackURL: "/dashboard",
       });
+
+      if (error) {
+        console.error("OAuth sign in error:", error);
+        setLoading(null);
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
       console.error("OAuth sign in failed:", err);
       setLoading(null);
