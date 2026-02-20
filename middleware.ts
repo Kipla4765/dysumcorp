@@ -1,13 +1,14 @@
 import type { NextRequest } from "next/server";
+
 import { NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const sessionToken =
-    request.cookies.get("dysum.session_token") ||
-    request.cookies.get("dysum.session_token.secure") ||
-    request.cookies.get("__Secure-dysum.session_token");
+    request.cookies.get("better-auth.session_token") ||
+    request.cookies.get("better-auth.session_token.secure") ||
+    request.cookies.get("__Secure-better-auth.session_token");
 
   const isAuthenticated = !!sessionToken;
 

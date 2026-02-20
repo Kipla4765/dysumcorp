@@ -93,7 +93,7 @@ export const auth = betterAuth({
   ].filter((origin): origin is string => !!origin),
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
-    cookiePrefix: "dysum",
+    cookiePrefix: "better-auth",
   },
   hooks: {
     after: async (ctx) => {
