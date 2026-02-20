@@ -108,17 +108,19 @@ export const auth = betterAuth({
   },
   hooks: {
     after: async (ctx) => {
+      const url = ctx.request?.url || "";
+      const path = url.includes("?") ? url.split("?")[0] : url;
       const isSignup =
-        ctx.path === "/sign-up" ||
-        ctx.path === "/signup" ||
-        ctx.path.startsWith("/callback/");
-      const isSignIn = ctx.path === "/sign-in" || ctx.path === "/signin";
+        path === "/sign-up" ||
+        path === "/signup" ||
+        path.includes("/callback/");
+      const isSignIn = path === "/sign-in" || path === "/signin";
 
-      if ((isSignup || isSignIn) && ctx.body?.user) {
-        const user = ctx.body.user as {
-          email: string;
-          name?: string | null;
-        };
+      const body = ctx.body as unknown as
+        | { user?: { email: string; name?: string | null } }
+        | undefined;
+      if ((isSignup || isSignIn) && body?.user) {
+        const user = body.user;
 
         const userName = user.name || user.email.split("@")[0];
 
