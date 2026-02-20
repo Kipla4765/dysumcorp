@@ -38,7 +38,20 @@ export default function AuthPage() {
         },
       );
 
-      const data = await response.json();
+      const text = await response.text();
+      console.log("OAuth raw response:", text);
+      console.log("OAuth status:", response.status);
+      console.log("OAuth location:", response.headers.get("location"));
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Failed to parse JSON:", text);
+        setLoading(null);
+        return;
+      }
+
       console.log("OAuth response:", data);
 
       if (data?.url) {

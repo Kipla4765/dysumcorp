@@ -7,18 +7,6 @@ import pg from "pg";
 import { PrismaClient } from "@/lib/generated/prisma/client";
 import { sendWelcomeEmail, sendSignInNotification } from "@/lib/email-service";
 
-// Validate required environment variables
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not defined");
-}
-if (!process.env.BETTER_AUTH_SECRET) {
-  throw new Error("BETTER_AUTH_SECRET is not defined");
-}
-if (!process.env.BETTER_AUTH_URL) {
-  throw new Error("BETTER_AUTH_URL is not defined");
-}
-
-// Create PostgreSQL connection pool
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   max: 20,
@@ -26,15 +14,12 @@ const pool = new pg.Pool({
   connectionTimeoutMillis: 10000,
 });
 
-// Handle pool errors
 pool.on("error", (err) => {
   console.error("Unexpected error on idle client", err);
 });
 
-// Create Prisma adapter for PostgreSQL
 const adapter = new PrismaPg(pool);
 
-// Initialize Prisma Client with the adapter
 const prisma = new PrismaClient({
   adapter,
   log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
@@ -100,15 +85,15 @@ export const auth = betterAuth({
       ),
     },
   },
-  secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL!,
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL,
   trustedOrigins: [
     process.env.BETTER_AUTH_URL!,
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL!,
-  ].filter(Boolean),
+  ].filter((origin): origin is string => !!origin),
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
-    cookiePrefix: "better-auth",
+    cookiePrefix: "dysum",
   },
   hooks: {
     after: async (ctx) => {
@@ -120,41 +105,35 @@ export const auth = betterAuth({
         path.includes("/callback/");
       const isSignIn = path === "/sign-in" || path === "/signin";
 
-      const body = ctx.body as unknown as
+      const body = ctx.body as
         | { user?: { email: string; name?: string | null } }
         | undefined;
-      if ((isSignup || isSignIn) && body?.user) {
-        const user = body.user;
+      const user = body?.user;
 
-        const userName = user.name || user.email.split("@")[0];
+      if (!user) return ctx;
 
-        if (isSignup) {
-          console.log(`📧 Sending welcome email to ${user.email}`);
-          try {
-            await sendWelcomeEmail({
-              to: user.email,
-              userName,
-            });
-            console.log(`✅ Welcome email sent to ${user.email}`);
-          } catch (error) {
-            console.error("Failed to send welcome email:", error);
-          }
-        }
+      const userName = user.name || user.email.split("@")[0];
 
-        if (isSignIn) {
-          console.log(`📧 Sending sign-in notification to ${user.email}`);
-          try {
-            await sendSignInNotification({
-              to: user.email,
-              userName,
-              time: new Date().toLocaleString(),
-            });
-            console.log(`✅ Sign-in notification sent to ${user.email}`);
-          } catch (error) {
-            console.error("Failed to send sign-in notification:", error);
-          }
+      if (isSignup) {
+        try {
+          await sendWelcomeEmail({ to: user.email, userName });
+        } catch (error) {
+          console.error("Failed to send welcome email:", error);
         }
       }
+
+      if (isSignIn) {
+        try {
+          await sendSignInNotification({
+            to: user.email,
+            userName,
+            time: new Date().toLocaleString(),
+          });
+        } catch (error) {
+          console.error("Failed to send sign-in notification:", error);
+        }
+      }
+
       return ctx;
     },
   },
@@ -162,57 +141,43 @@ export const auth = betterAuth({
     creem({
       apiKey: process.env.CREEM_API_KEY!,
       webhookSecret: process.env.CREEM_WEBHOOK_SECRET,
-      testMode: process.env.NODE_ENV === "development", // Automatically switch based on environment
+      testMode: process.env.NODE_ENV === "development",
       defaultSuccessUrl: "/dashboard/billing?success=true",
-      persistSubscriptions: true, // Enable database persistence
-      onCheckoutCompleted: async ({ customer, metadata }) => {
-        console.log(`🛒 Checkout completed for ${customer?.email}`);
-      },
-      onGrantAccess: async ({ reason, product, customer, metadata }) => {
-        console.log(
-          `✅ Granted access to ${customer?.email} - Reason: ${reason}`,
-        );
-
-        // Update user's subscription plan in the database
-        try {
-          const planId = metadata?.planId as string | undefined;
-
-          if (planId && planId !== "free" && customer?.email) {
-            await prisma.user.updateMany({
-              where: { email: customer.email },
-              data: {
-                subscriptionPlan: planId,
-                subscriptionStatus: "active",
-                creemCustomerId: customer.id,
-              },
-            });
-            console.log(`✅ Updated user ${customer.email} to ${planId} plan`);
-          }
-        } catch (error) {
-          console.error("Failed to update user subscription:", error);
+      persistSubscriptions: true,
+      onCheckoutCompleted: async ({ customer }) => {
+        if (customer?.email) {
+          await prisma.user.updateMany({
+            where: { email: customer.email },
+            data: { subscriptionStatus: "active" },
+          });
         }
       },
-      onRevokeAccess: async ({ reason, product, customer, metadata }) => {
-        console.log(
-          `❌ Revoked access from ${customer?.email} - Reason: ${reason}`,
-        );
-
-        // Downgrade user to free plan
-        try {
-          if (customer?.email) {
-            await prisma.user.updateMany({
-              where: { email: customer.email },
-              data: {
-                subscriptionPlan: "free",
-                subscriptionStatus: "cancelled",
-              },
-            });
-            console.log(`⬇️ Downgraded user ${customer.email} to free plan`);
-          }
-        } catch (error) {
-          console.error("Failed to downgrade user:", error);
+      onGrantAccess: async ({ customer, metadata }) => {
+        const planId = metadata?.planId as string | undefined;
+        if (planId && planId !== "free" && customer?.email) {
+          await prisma.user.updateMany({
+            where: { email: customer.email },
+            data: {
+              subscriptionPlan: planId,
+              subscriptionStatus: "active",
+              creemCustomerId: customer.id,
+            },
+          });
+        }
+      },
+      onRevokeAccess: async ({ customer }) => {
+        if (customer?.email) {
+          await prisma.user.updateMany({
+            where: { email: customer.email },
+            data: {
+              subscriptionPlan: "free",
+              subscriptionStatus: "cancelled",
+            },
+          });
         }
       },
     }),
   ],
 });
+
+export { prisma };
