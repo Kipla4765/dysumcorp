@@ -16,6 +16,7 @@ import {
   FolderOpen,
   Hash,
   ExternalLink,
+  XIcon,
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
@@ -82,8 +83,8 @@ const FolderNode: React.FC<FolderNodeProps> = ({
           />
           <span
             className={`text-sm font-medium truncate ${isSelected
-                ? "text-primary font-semibold"
-                : "text-muted-foreground group-hover:text-foreground"
+              ? "text-primary font-semibold"
+              : "text-muted-foreground group-hover:text-foreground"
               }`}
           >
             {folder.name}
@@ -374,10 +375,10 @@ const StorageSection: React.FC<StorageSectionProps> = ({
                       >
                         <div
                           className={`w-2 h-2 rounded-full ${account.storageStatus === "DISCONNECTED"
-                              ? "bg-red-500"
-                              : account.storageStatus === "ERROR"
-                                ? "bg-orange-500 animate-pulse"
-                                : "bg-yellow-500"
+                            ? "bg-red-500"
+                            : account.storageStatus === "ERROR"
+                              ? "bg-orange-500 animate-pulse"
+                              : "bg-yellow-500"
                             }`}
                         />
                         <span className="font-medium">
@@ -446,8 +447,8 @@ const StorageSection: React.FC<StorageSectionProps> = ({
             <button
               key={provider.id}
               className={`relative p-5 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${isActive
-                  ? "border-primary bg-muted"
-                  : "border-border bg-card hover:border-muted-foreground hover:bg-muted"
+                ? "border-primary bg-muted"
+                : "border-border bg-card hover:border-muted-foreground hover:bg-muted"
                 } ${provider.disabled ? "opacity-40 grayscale cursor-not-allowed" : ""}`}
               disabled={provider.disabled}
               type="button"
@@ -468,22 +469,22 @@ const StorageSection: React.FC<StorageSectionProps> = ({
                   <div className="flex items-center justify-center gap-1 mt-1">
                     <div
                       className={`w-1.5 h-1.5 rounded-full ${account.storageStatus === "ACTIVE"
-                          ? "bg-green-500"
-                          : account.storageStatus === "DISCONNECTED"
-                            ? "bg-red-500"
-                            : account.storageStatus === "ERROR"
-                              ? "bg-orange-500 animate-pulse"
-                              : "bg-yellow-500"
+                        ? "bg-green-500"
+                        : account.storageStatus === "DISCONNECTED"
+                          ? "bg-red-500"
+                          : account.storageStatus === "ERROR"
+                            ? "bg-orange-500 animate-pulse"
+                            : "bg-yellow-500"
                         }`}
                     />
                     <span
                       className={`text-xs font-medium ${account.storageStatus === "ACTIVE"
-                          ? "text-green-600"
-                          : account.storageStatus === "DISCONNECTED"
-                            ? "text-red-600"
-                            : account.storageStatus === "ERROR"
-                              ? "text-orange-600"
-                              : "text-yellow-600"
+                        ? "text-green-600"
+                        : account.storageStatus === "DISCONNECTED"
+                          ? "text-red-600"
+                          : account.storageStatus === "ERROR"
+                            ? "text-orange-600"
+                            : "text-yellow-600"
                         }`}
                     >
                       {account.storageStatus === "ACTIVE"
@@ -514,8 +515,8 @@ const StorageSection: React.FC<StorageSectionProps> = ({
       {healthCheckResults && (
         <div
           className={`rounded-xl p-4 border ${healthCheckResults.success
-              ? "bg-success/10 border-success/20"
-              : "bg-destructive/10 border-destructive/20"
+            ? "bg-success/10 border-success/20"
+            : "bg-destructive/10 border-destructive/20"
             }`}
         >
           <div className="flex items-start gap-3">
@@ -583,8 +584,8 @@ const StorageSection: React.FC<StorageSectionProps> = ({
                 <ChevronRight className="w-3 h-3 text-muted" />
                 <button
                   className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all ${idx === folderPath.length - 1
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-card hover:text-foreground"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-card hover:text-foreground"
                     }`}
                   type="button"
                   onClick={() => navigateToBreadcrumb(idx)}
@@ -792,8 +793,8 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({
               <button
                 key={template.size}
                 className={`p-3 rounded-xl border text-center transition-all ${formData.maxFileSize === template.size
-                    ? "border-primary bg-primary text-primary-foreground shadow-md"
-                    : "border-border bg-card text-muted-foreground hover:border-muted-foreground"
+                  ? "border-primary bg-primary text-primary-foreground shadow-md"
+                  : "border-border bg-card text-muted-foreground hover:border-muted-foreground"
                   }`}
                 type="button"
                 onClick={() => {
@@ -879,8 +880,8 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({
             <button
               key={req.id}
               className={`flex-1 px-4 py-3 rounded-xl border font-bold text-sm transition-all ${formData[req.key as keyof typeof formData]
-                  ? "border-primary bg-primary text-primary-foreground shadow-md"
-                  : "border-border bg-card text-muted-foreground hover:border-muted-foreground"
+                ? "border-primary bg-primary text-primary-foreground shadow-md"
+                : "border-border bg-card text-muted-foreground hover:border-muted-foreground"
                 }`}
               type="button"
               onClick={() =>
@@ -996,6 +997,7 @@ export default function EditPortalPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [requiresUpgrade, setRequiresUpgrade] = useState(false);
   const [portal, setPortal] = useState<any>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     // Identity
@@ -1065,6 +1067,7 @@ export default function EditPortalPage() {
       const p = data.portal;
 
       setPortal(p);
+      setLogoPreview(p.logoUrl || null);
 
       // Pre-fill form with portal data
       setFormData({
@@ -1125,6 +1128,7 @@ export default function EditPortalPage() {
   const handleLogoSelect = (file: File | null) => {
     if (!file) {
       updateFormData("logo", null);
+      setLogoPreview(portal?.logoUrl || null);
 
       return;
     }
@@ -1156,8 +1160,14 @@ export default function EditPortalPage() {
       return;
     }
 
-    // Update form data
+    // Update form data and preview
     updateFormData("logo", file);
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      setLogoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   // Upload logo to Cloudinary
@@ -1460,8 +1470,8 @@ export default function EditPortalPage() {
                     <button
                       key={step.id}
                       className={`w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl transition-all duration-200 group whitespace-nowrap ${isActive
-                          ? "bg-card shadow-sm border border-border text-foreground"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-card shadow-sm border border-border text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                         }`}
                       type="button"
                       onClick={() => navigateToSection(step.id)}
@@ -1623,10 +1633,34 @@ export default function EditPortalPage() {
                               <label className="block text-sm font-semibold text-foreground mb-4">
                                 Portal Logo
                               </label>
-                              <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-muted-foreground/50 transition-colors">
-                                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground mb-2">
-                                  Click to upload or drag and drop
+                              <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-muted-foreground/50 transition-colors bg-muted/20">
+                                {logoPreview ? (
+                                  <div className="relative w-48 h-24 mx-auto mb-4 group">
+                                    <img
+                                      src={logoPreview}
+                                      alt="Logo Preview"
+                                      className="w-full h-full object-contain p-2 bg-card rounded-lg border border-border"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleLogoSelect(null)}
+                                      className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                    >
+                                      <XIcon className="w-3 h-3" />
+                                    </button>
+                                    {logoPreview === portal?.logoUrl && (
+                                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-primary/10 border border-primary/20 rounded-md">
+                                        <p className="text-[8px] font-bold text-primary uppercase tracking-tighter">Current Live</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                                )}
+                                <p className="text-sm text-muted-foreground mb-4 font-medium">
+                                  {logoPreview
+                                    ? "Replace current branding asset"
+                                    : "Click to upload or drag and drop"}
                                 </p>
                                 <input
                                   accept="image/jpeg,image/jpg,image/png,image/gif,image/svg+xml,image/webp"
@@ -1639,22 +1673,21 @@ export default function EditPortalPage() {
                                     )
                                   }
                                 />
-                                <Button
-                                  className="rounded-xl"
-                                  size="sm"
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() =>
-                                    document.getElementById("logo")?.click()
-                                  }
-                                >
-                                  SELECT FILE
-                                </Button>
-                                {formData.logo && (
-                                  <p className="text-xs text-muted-foreground mt-2">
-                                    Selected: {formData.logo.name}
+                                <div className="flex flex-col items-center gap-2">
+                                  <Button
+                                    className="rounded-xl px-6 h-10 font-bold text-xs uppercase tracking-widest"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                      document.getElementById("logo")?.click()
+                                    }
+                                  >
+                                    {logoPreview ? "CHANGE FILE" : "SELECT LOGO"}
+                                  </Button>
+                                  <p className="text-[10px] text-muted-foreground font-medium italic">
+                                    Translucent PNG or SVG recommended (5MB Limit)
                                   </p>
-                                )}
+                                </div>
                               </div>
                             </div>
 
