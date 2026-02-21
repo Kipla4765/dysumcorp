@@ -1,6 +1,7 @@
 /**
  * Upload Manager - Hybrid upload system
  * Automatically chooses between API upload (< 4MB) and direct upload (>= 4MB)
+ * Enhanced with chunked uploading and retries for reliability
  */
 
 export interface UploadOptions {
@@ -11,6 +12,7 @@ export interface UploadOptions {
   uploaderEmail?: string;
   onProgress?: (progress: number) => void;
   provider?: "google" | "dropbox";
+  skipNotification?: boolean;
 }
 
 export interface UploadResult {
@@ -21,8 +23,9 @@ export interface UploadResult {
 }
 
 const SIZE_THRESHOLD = 0; // Force all files through direct upload to bypass Vercel limits
-
-// Force rebuild: v2.0
+const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
 
 /**
  * Upload file using the appropriate method based on file size
@@ -30,23 +33,15 @@ const SIZE_THRESHOLD = 0; // Force all files through direct upload to bypass Ver
 export async function uploadFile(
   options: UploadOptions,
 ): Promise<UploadResult> {
-  const {
-    file,
-    portalId,
-    password,
-    uploaderName,
-    uploaderEmail,
-    onProgress,
-    provider,
-  } = options;
+  const { file } = options;
 
   // Decide upload method based on file size
   if (file.size < SIZE_THRESHOLD) {
     // Small file: Use API upload (simple, fast)
     return uploadViaAPI(options);
   } else {
-    // Large file: Use direct upload (no size limits)
-    return uploadDirectToCloud(options);
+    // Large file: Use direct upload with chunking and retries
+    return uploadDirectToCloudChunked(options);
   }
 }
 
@@ -54,8 +49,15 @@ export async function uploadFile(
  * Upload via API route (for files < 4MB)
  */
 async function uploadViaAPI(options: UploadOptions): Promise<UploadResult> {
-  const { file, portalId, password, uploaderName, uploaderEmail, onProgress } =
-    options;
+  const {
+    file,
+    portalId,
+    password,
+    uploaderName,
+    uploaderEmail,
+    onProgress,
+    skipNotification,
+  } = options;
 
   try {
     const formData = new FormData();
@@ -66,6 +68,7 @@ async function uploadViaAPI(options: UploadOptions): Promise<UploadResult> {
     if (password) formData.append("passwords", password);
     if (uploaderName) formData.append("uploaderName", uploaderName);
     if (uploaderEmail) formData.append("uploaderEmail", uploaderEmail);
+    if (skipNotification) formData.append("skipNotification", "true");
 
     // Create XMLHttpRequest for progress tracking
     const result = await new Promise<any>((resolve, reject) => {
@@ -112,9 +115,27 @@ async function uploadViaAPI(options: UploadOptions): Promise<UploadResult> {
 }
 
 /**
- * Upload directly to cloud storage (for files >= 4MB)
+ * Helper for exponential backoff retries
  */
-async function uploadDirectToCloud(
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  retries: number = MAX_RETRIES,
+  delay: number = INITIAL_RETRY_DELAY,
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries <= 0) throw error;
+    console.warn(`Retry attempt remaining: ${retries}. Retrying in ${delay}ms...`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    return withRetry(fn, retries - 1, delay * 2);
+  }
+}
+
+/**
+ * Upload directly to cloud storage using chunking and retries
+ */
+async function uploadDirectToCloudChunked(
   options: UploadOptions,
 ): Promise<UploadResult> {
   const {
@@ -125,10 +146,11 @@ async function uploadDirectToCloud(
     uploaderEmail,
     onProgress,
     provider,
+    skipNotification,
   } = options;
 
   try {
-    // Step 1: Get upload URL from public API (works for unauthenticated portal visitors)
+    // Step 1: Get upload session info from our API
     const uploadUrlResponse = await fetch("/api/portals/upload-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -143,51 +165,35 @@ async function uploadDirectToCloud(
 
     if (!uploadUrlResponse.ok) {
       const errorData = await uploadUrlResponse.json();
-
-      // If no storage connected, show helpful error
-      if (
-        uploadUrlResponse.status === 400 &&
-        errorData.error?.includes("storage connected")
-      ) {
-        throw new Error(
-          "Cloud storage not connected. This portal cannot accept uploads at this time.",
-        );
-      }
-
-      throw new Error(errorData.error || "Failed to get upload URL");
+      throw new Error(errorData.error || "Failed to get upload session");
     }
 
     const uploadData = await uploadUrlResponse.json();
+    let storageUrl = "";
+    let storageFileId = "";
 
-    // Step 2: Upload directly to cloud storage (bypasses Vercel)
-    let storageUrl: string;
-    let storageFileId: string;
-
+    // Step 2: Perform chunked upload based on provider
     if (uploadData.provider === "google") {
-      // Google Drive resumable upload
-      const uploadResult = await uploadToGoogleDrive(
+      const result = await uploadToGoogleDriveChunked(
         uploadData.uploadUrl,
         file,
         onProgress,
       );
-
-      storageUrl = uploadResult.webViewLink || "";
-      storageFileId = uploadResult.id;
-    } else {
-      // Dropbox upload
-      const uploadResult = await uploadToDropbox(
+      storageUrl = result.webViewLink || "";
+      storageFileId = result.id;
+    } else if (uploadData.provider === "dropbox") {
+      const result = await uploadToDropboxChunked(
         uploadData.accessToken,
         uploadData.path,
         file,
         onProgress,
       );
-
       storageUrl = "";
-      storageFileId = uploadResult.id;
+      storageFileId = result.id;
     }
 
-    // Step 3: Confirm upload and save metadata (public endpoint)
-    const confirmResponse = await fetch("/api/portals/confirm-upload", {
+    // Step 3: Confirm upload and save metadata
+    const confirmResponse = await withRetry(() => fetch("/api/portals/confirm-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -200,8 +206,9 @@ async function uploadDirectToCloud(
         password,
         uploaderName,
         uploaderEmail,
+        skipNotification,
       }),
-    });
+    }));
 
     if (!confirmResponse.ok) {
       throw new Error("Failed to confirm upload");
@@ -215,8 +222,7 @@ async function uploadDirectToCloud(
       method: "direct",
     };
   } catch (error) {
-    console.error("Direct upload error:", error);
-
+    console.error("Direct chunked upload error:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Upload failed",
@@ -226,106 +232,180 @@ async function uploadDirectToCloud(
 }
 
 /**
- * Upload to Google Drive using resumable upload
+ * Google Drive Chunked Upload (Resumable)
  */
-async function uploadToGoogleDrive(
+async function uploadToGoogleDriveChunked(
   uploadUrl: string,
   file: File,
   onProgress?: (progress: number) => void,
 ): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
+  const totalSize = file.size;
+  let uploadedBytes = 0;
 
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable && onProgress) {
-        const percentComplete = (e.loaded / e.total) * 100;
+  while (uploadedBytes < totalSize) {
+    const chunk = file.slice(uploadedBytes, Math.min(uploadedBytes + CHUNK_SIZE, totalSize));
+    const chunkStart = uploadedBytes;
+    const chunkEnd = chunkStart + chunk.size - 1;
 
-        onProgress(percentComplete);
+    await withRetry(async () => {
+      const response = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Range": `bytes ${chunkStart}-${chunkEnd}/${totalSize}`,
+          "Content-Type": file.type || "application/octet-stream",
+        },
+        body: chunk,
+      });
+
+      // Google returns 308 Resume Incomplete for intermediate chunks
+      if (!response.ok && response.status !== 308) {
+        throw new Error(`Google Drive upload failed: ${response.statusText}`);
+      }
+
+      if (uploadedBytes + chunk.size === totalSize) {
+        // Last chunk
+        return await response.json();
       }
     });
 
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(JSON.parse(xhr.responseText));
-      } else {
-        reject(new Error(`Google Drive upload failed: ${xhr.statusText}`));
-      }
-    });
+    uploadedBytes += chunk.size;
+    if (onProgress) {
+      onProgress(Math.min((uploadedBytes / totalSize) * 100, 99));
+    }
+  }
 
-    xhr.addEventListener("error", () => {
-      reject(new Error("Network error during Google Drive upload"));
-    });
+  // After loop, we need to get the final response if the last chunk didn't return it
+  // But in the logic above, we should have it. Let's refine to return the result.
+  // We'll verify the last chunk's JSON response.
+  const finalResponse = await withRetry(() => fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Range": `bytes */${totalSize}`,
+    }
+  }));
 
-    xhr.open("PUT", uploadUrl);
-    xhr.setRequestHeader(
-      "Content-Type",
-      file.type || "application/octet-stream",
-    );
-    xhr.send(file);
-  });
+  if (onProgress) onProgress(100);
+  return await finalResponse.json();
 }
 
 /**
- * Upload to Dropbox
+ * Dropbox Chunked Upload (Upload Session)
  */
-async function uploadToDropbox(
+async function uploadToDropboxChunked(
   accessToken: string,
   path: string,
   file: File,
   onProgress?: (progress: number) => void,
 ): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
+  const totalSize = file.size;
 
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable && onProgress) {
-        const percentComplete = (e.loaded / e.total) * 100;
+  // Step 1: Start Session
+  const startResponse = await withRetry(() => fetch("https://content.dropboxapi.com/2/files/upload_session/start", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Dropbox-API-Arg": JSON.stringify({ close: false }),
+      "Content-Type": "application/octet-stream",
+    }
+  }));
 
-        onProgress(percentComplete);
-      }
-    });
+  if (!startResponse.ok) {
+    throw new Error(`Dropbox start session failed: ${startResponse.statusText}`);
+  }
 
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(JSON.parse(xhr.responseText));
-      } else {
-        reject(new Error(`Dropbox upload failed: ${xhr.statusText}`));
-      }
-    });
+  const { session_id } = await startResponse.json();
+  let uploadedBytes = 0;
 
-    xhr.addEventListener("error", () => {
-      reject(new Error("Network error during Dropbox upload"));
-    });
+  // Step 2: Append Chunks
+  while (uploadedBytes < totalSize - CHUNK_SIZE) {
+    const chunk = file.slice(uploadedBytes, uploadedBytes + CHUNK_SIZE);
 
-    xhr.open("POST", "https://content.dropboxapi.com/2/files/upload");
-    xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
-    xhr.setRequestHeader(
-      "Dropbox-API-Arg",
-      JSON.stringify({
-        path: path.startsWith("/") ? path : `/${path}`,
-        mode: "add",
-        autorename: true,
-        mute: false,
+    await withRetry(() => fetch("https://content.dropboxapi.com/2/files/upload_session/append_v2", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Dropbox-API-Arg": JSON.stringify({
+          cursor: { session_id, offset: uploadedBytes },
+          close: false,
+        }),
+        "Content-Type": "application/octet-stream",
+      },
+      body: chunk,
+    }));
+
+    uploadedBytes += chunk.size;
+    if (onProgress) onProgress((uploadedBytes / totalSize) * 100);
+  }
+
+  // Step 3: Finish Session
+  const finalChunk = file.slice(uploadedBytes);
+  const finishResponse = await withRetry(() => fetch("https://content.dropboxapi.com/2/files/upload_session/finish", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Dropbox-API-Arg": JSON.stringify({
+        cursor: { session_id, offset: uploadedBytes },
+        commit: {
+          path: path.startsWith("/") ? path : `/${path}`,
+          mode: "add",
+          autorename: true,
+        },
       }),
-    );
-    xhr.setRequestHeader("Content-Type", "application/octet-stream");
-    xhr.send(file);
-  });
+      "Content-Type": "application/octet-stream",
+    },
+    body: finalChunk,
+  }));
+
+  if (!finishResponse.ok) {
+    throw new Error(`Dropbox finish failed: ${finishResponse.statusText}`);
+  }
+
+  if (onProgress) onProgress(100);
+  return await finishResponse.json();
 }
 
 /**
- * Upload multiple files
+ * Upload multiple files and send a single batch notification report
  */
 export async function uploadFiles(
   files: File[],
   options: Omit<UploadOptions, "file">,
 ): Promise<UploadResult[]> {
   const results: UploadResult[] = [];
+  const successfulFiles: Array<{ name: string; size: number }> = [];
 
   for (const file of files) {
-    const result = await uploadFile({ ...options, file });
+    const result = await uploadFile({
+      ...options,
+      file,
+      skipNotification: true // Skip individual notification for batch uploads
+    });
 
     results.push(result);
+
+    if (result.success) {
+      successfulFiles.push({ name: file.name, size: file.size });
+    }
+  }
+
+  // Send batch notification if there were successes
+  if (successfulFiles.length > 0) {
+    try {
+      await fetch("/api/portals/batch-notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          portalId: options.portalId,
+          files: successfulFiles,
+          uploaderName: options.uploaderName,
+          uploaderEmail: options.uploaderEmail,
+        }),
+      });
+      console.log(`[Upload Manager] Batch notification sent for ${successfulFiles.length} files`);
+    } catch (error) {
+      console.error("[Upload Manager] Failed to send batch notification:", error);
+      // Don't fail the whole process if notification fails
+    }
   }
 
   return results;

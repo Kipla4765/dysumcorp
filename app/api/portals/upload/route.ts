@@ -245,21 +245,26 @@ export async function POST(request: NextRequest) {
     );
 
     // Send email notification to portal owner
-    try {
-      const uploaderName = formData.get("uploaderName") as string;
+    const skipNotification = formData.get("skipNotification") === "true";
 
-      await sendFileUploadNotification({
-        userEmail: portal.user.email,
-        portalName: portal.name,
-        files: uploadedFiles.map((f) => ({
-          name: f.name,
-          size: formatFileSize(Number(f.size)),
-        })),
-        uploaderName: uploaderName || undefined,
-      });
-    } catch (emailError) {
-      console.error("Failed to send email notification:", emailError);
-      // Don't fail the upload if email fails
+    if (!skipNotification) {
+      try {
+        const uploaderName = formData.get("uploaderName") as string;
+
+        await sendFileUploadNotification({
+          userEmail: portal.user.email,
+          portalName: portal.name,
+          portalSlug: portal.slug,
+          files: uploadedFiles.map((f) => ({
+            name: f.name,
+            size: formatFileSize(Number(f.size)),
+          })),
+          uploaderName: uploaderName || undefined,
+        });
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+        // Don't fail the upload if email fails
+      }
     }
 
     return NextResponse.json(

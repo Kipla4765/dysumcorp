@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       uploaderName,
       uploaderEmail,
       password,
+      skipNotification,
     } = body;
 
     console.log("[Portal Confirm Upload] Request:", {
@@ -46,14 +47,18 @@ export async function POST(request: NextRequest) {
       provider,
       uploaderName,
       uploaderEmail,
+      skipNotification,
     });
 
-    if (!portalId || !fileName || !fileSize || !storageUrl || !storageFileId) {
+    if (!portalId || !fileName || !fileSize || !storageFileId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
       );
     }
+
+    // Ensure storageUrl is at least an empty string
+    const finalStorageUrl = storageUrl || "";
 
     // Verify portal exists and get owner info
     const portal = await prisma.portal.findUnique({
@@ -83,7 +88,7 @@ export async function POST(request: NextRequest) {
         name: fileName,
         size: BigInt(fileSize),
         mimeType: mimeType || "application/octet-stream",
-        storageUrl: storageUrl,
+        storageUrl: finalStorageUrl,
         portalId: portalId,
         passwordHash,
         uploaderName: uploaderName || null,
@@ -93,26 +98,32 @@ export async function POST(request: NextRequest) {
 
     console.log("[Portal Confirm Upload] File metadata saved:", file.id);
 
-    // Send email notification to portal owner
-    try {
-      await sendFileUploadNotification({
-        userEmail: portal.user.email,
-        portalName: portal.name,
-        files: [
-          {
-            name: fileName,
-            size: formatFileSize(fileSize),
-          },
-        ],
-        uploaderName: uploaderName || undefined,
-      });
-      console.log("[Portal Confirm Upload] Email notification sent");
-    } catch (emailError) {
-      console.error(
-        "[Portal Confirm Upload] Failed to send email notification:",
-        emailError,
-      );
-      // Don't fail the upload if email fails
+    // Send email notification to portal owner if not skipped
+    if (!skipNotification) {
+      try {
+        await sendFileUploadNotification({
+          userEmail: portal.user.email,
+          portalName: portal.name,
+          portalSlug: portal.slug,
+          files: [
+            {
+              name: fileName,
+              size: formatFileSize(Number(fileSize)),
+            },
+          ],
+          uploaderName: uploaderName || undefined,
+          uploaderEmail: uploaderEmail || undefined,
+        });
+        console.log("[Portal Confirm Upload] Email notification sent");
+      } catch (emailError) {
+        console.error(
+          "[Portal Confirm Upload] Failed to send email notification:",
+          emailError,
+        );
+        // Don't fail the upload if email fails
+      }
+    } else {
+      console.log("[Portal Confirm Upload] Email notification skipped (batch mode)");
     }
 
     return NextResponse.json({
