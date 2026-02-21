@@ -9,6 +9,7 @@ import { PRICING_PLANS } from "@/config/pricing";
 import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { LandingNavbar } from "@/components/landing-navbar";
+import { useToast } from "@/lib/toast";
 
 export function PricingClient() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export function PricingClient() {
     "monthly",
   );
   const currentPlan = (session?.user as any)?.subscriptionPlan || "free";
+  const { showToast } = useToast();
 
   const handleSubscribe = async (planId: string, isAnnual: boolean) => {
     if (!session?.user) {
@@ -41,7 +43,7 @@ export function PricingClient() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "Failed to create checkout session");
+        showToast(data.error || "Failed to create checkout session", "error");
         router.push("/dashboard/billing");
 
         return;
@@ -49,7 +51,7 @@ export function PricingClient() {
       window.location.href = data.checkoutUrl;
     } catch (error) {
       console.error("Subscription error:", error);
-      alert("Failed to start checkout process");
+      showToast("Failed to start checkout process", "error");
       router.push("/dashboard/billing");
     }
   };
