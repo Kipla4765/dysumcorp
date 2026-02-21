@@ -23,23 +23,6 @@ const pricingPlans = [
     cta: "Start Free Trial",
     popular: true,
   },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "",
-    description: "For large organizations and high-volume needs",
-    features: [
-      "Unlimited Portals",
-      "Unlimited Storage",
-      "SOC2 & HIPAA Compliance",
-      "SSO & SAML Integration",
-      "Dedicated Account Manager",
-      "Custom SLA",
-    ],
-    cta: "Contact Sales",
-    popular: false,
-    dark: true,
-  },
 ];
 
 export default function PricingSection() {
@@ -65,17 +48,15 @@ export default function PricingSection() {
         </FadeIn>
 
         <Stagger
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 max-w-3xl mx-auto"
           delay={0.15}
         >
           {pricingPlans.map((plan, index) => (
             <StaggerItem key={index}>
               <div
-                className={`p-6 sm:p-8 lg:p-12 rounded-2xl lg:rounded-[2.5rem] flex flex-col border premium-shadow-hover relative h-full ${plan.dark
-                    ? "bg-[#1c1917] text-stone-50 border-transparent"
-                    : plan.popular
-                      ? "bg-white border-2 border-[#1c1917]"
-                      : "bg-white border-stone-200"
+                className={`p-6 sm:p-8 lg:p-12 rounded-2xl lg:rounded-[2.5rem] flex flex-col border premium-shadow-hover relative h-full ${plan.popular
+                  ? "bg-white border-2 border-[#1c1917]"
+                  : "bg-white border-stone-200"
                   }`}
               >
                 {plan.popular && (
@@ -85,22 +66,21 @@ export default function PricingSection() {
                 )}
                 <div className="mb-8">
                   <h3
-                    className={`text-2xl font-bold serif-font mb-2 ${plan.dark ? "text-stone-50" : "text-[#1c1917]"}`}
+                    className="text-2xl font-bold serif-font mb-2 text-[#1c1917]"
                   >
                     {plan.name}
                   </h3>
-                  <p className={`text-sm mb-4 ${plan.dark ? "text-stone-400" : "text-stone-600"}`}>
+                  <p className="text-sm mb-4 text-stone-600">
                     {plan.description}
                   </p>
                   <div className="flex items-baseline gap-1">
                     <span
-                      className={`text-4xl font-bold ${plan.dark ? "text-stone-50" : "text-[#1c1917]"}`}
+                      className="text-4xl font-bold text-[#1c1917]"
                     >
                       {plan.price !== "Custom" ? `$${plan.price}` : plan.price}
                     </span>
                     <span
-                      className={`text-sm font-medium ${plan.dark ? "text-stone-400" : "text-stone-600"
-                        }`}
+                      className="text-sm font-medium text-stone-600"
                     >
                       {plan.period}
                     </span>
@@ -110,23 +90,19 @@ export default function PricingSection() {
                   {plan.features.map((feature, i) => (
                     <li
                       key={i}
-                      className={`flex items-center gap-3 text-sm font-medium ${plan.dark ? "text-stone-300" : "text-stone-700"
-                        }`}
+                      className="flex items-center gap-3 text-sm font-medium text-stone-700"
                     >
                       <Check
-                        className={`w-4 h-4 flex-shrink-0 ${plan.dark ? "text-stone-50" : "text-[#1c1917]"
-                          }`}
+                        className="w-4 h-4 flex-shrink-0 text-[#1c1917]"
                       />
                       {feature}
                     </li>
                   ))}
                 </ul>
                 <Button
-                  className={`w-full py-4 rounded-xl font-bold text-sm transition-all ${plan.dark
-                      ? "bg-white text-[#1c1917] hover:scale-105"
-                      : plan.popular
-                        ? "bg-[#1c1917] text-stone-50 hover:bg-stone-800"
-                        : "bg-[#1c1917] border border-stone-200 text-stone-50 hover:bg-stone-800"
+                  className={`w-full py-4 rounded-xl font-bold text-sm transition-all ${plan.popular
+                    ? "bg-[#1c1917] text-stone-50 hover:bg-stone-800"
+                    : "bg-[#1c1917] border border-stone-200 text-stone-50 hover:bg-stone-800"
                     }`}
                   onClick={() => (window.location.href = "/auth")}
                 >

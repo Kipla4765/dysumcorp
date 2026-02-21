@@ -17,59 +17,52 @@ const posts = [
   },
 ];
 
+import { LandingNavbar } from "@/components/landing-navbar";
+
 export function BlogClient() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 px-4 md:px-8 lg:px-16 bg-background/80 backdrop-blur-md border-b border-border/40">
-        <div className="flex h-16 items-center justify-between max-w-7xl mx-auto">
-          <Link className="flex items-center gap-2" href="/">
-            <span className="font-mono text-xl font-bold">Dysumcorp</span>
-          </Link>
-          <div className="flex items-center space-x-4">
-            <Button
-              className="rounded-none bg-[#334155] hover:bg-[rgba(51,65,85,0.9)] font-mono"
-              onClick={() => (window.location.href = "/auth")}
-            >
-              GET STARTED <ArrowRight className="ml-1 w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#fafaf9] selection:bg-stone-200">
+      <LandingNavbar />
 
       <main className="py-20 px-4 md:px-8 lg:px-16">
         <div className="max-w-4xl mx-auto">
-          <h1 className="font-mono text-4xl md:text-5xl font-bold mb-4 text-center">
-            Blog
-          </h1>
-          <p className="text-xl text-muted-foreground font-mono text-center mb-12">
-            Tips, guides, and best practices for collecting files from clients.
-          </p>
+          <div className="text-center mb-16">
+            <span className="text-stone-500 font-bold tracking-[0.3em] uppercase text-xs mb-4 block">
+              Knowledge Base
+            </span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold serif-font text-[#1c1917] mb-6">
+              Blog
+            </h1>
+            <p className="text-lg md:text-xl text-stone-700 max-w-2xl mx-auto font-medium leading-relaxed">
+              Tips, guides, and best practices for collecting files from clients securely and efficiently.
+            </p>
+          </div>
 
-          <div className="space-y-8">
+          <div className="grid gap-8">
             {posts.map((post) => (
               <Link
                 key={post.slug}
-                className="block p-6 border rounded-lg hover:border-[#334155] transition-colors"
+                className="group block p-8 bg-white border border-stone-200 rounded-[2rem] hover:border-[#1c1917] hover:shadow-xl transition-all duration-300"
                 href={`/blog/${post.slug}`}
               >
-                <div className="flex items-center gap-4 text-sm text-muted-foreground font-mono mb-3">
-                  <span className="bg-[rgba(51,65,85,0.1)] px-2 py-1 rounded">
+                <div className="flex flex-wrap items-center gap-4 text-xs font-bold uppercase tracking-widest text-stone-500 mb-6">
+                  <span className="bg-stone-100 text-[#1c1917] px-3 py-1 rounded-full">
                     {post.category}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
                     {post.readTime}
-                  </span>
+                  </div>
                   <span>{post.date}</span>
                 </div>
-                <h2 className="font-mono text-2xl font-bold mb-2">
+                <h2 className="text-2xl md:text-3xl font-bold mb-4 text-[#1c1917] serif-font group-hover:text-stone-700 transition-colors">
                   {post.title}
                 </h2>
-                <p className="text-muted-foreground font-mono">
+                <p className="text-stone-600 leading-relaxed font-medium mb-8 line-clamp-2">
                   {post.excerpt}
                 </p>
-                <div className="mt-4 flex items-center text-[#334155] font-mono font-semibold">
-                  Read more <ArrowRight className="ml-1 h-4 w-4" />
+                <div className="flex items-center text-[#1c1917] font-bold text-sm uppercase tracking-widest group-hover:gap-2 transition-all">
+                  Read article <ArrowRight className="ml-1 h-4 w-4" />
                 </div>
               </Link>
             ))}
@@ -77,20 +70,26 @@ export function BlogClient() {
         </div>
       </main>
 
-      <footer className="border-t border-border/40 py-8 px-4 md:px-8 lg:px-16">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <span className="font-mono text-sm text-muted-foreground">
+      <footer className="border-t border-stone-200 py-12 px-4 md:px-8 lg:px-16 bg-white/50">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-[#1c1917] flex items-center justify-center rounded-lg">
+              <span className="text-stone-50 font-bold text-sm">D</span>
+            </div>
+            <span className="serif-font font-bold text-[#1c1917]">dysumcorp</span>
+          </div>
+          <span className="text-sm font-medium text-stone-500">
             © 2025 Dysumcorp. All rights reserved.
           </span>
-          <nav className="flex gap-6">
+          <nav className="flex gap-8">
             <Link
-              className="text-sm font-mono text-muted-foreground hover:text-foreground"
+              className="text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-[#1c1917] transition-colors"
               href="/terms"
             >
               Terms
             </Link>
             <Link
-              className="text-sm font-mono text-muted-foreground hover:text-foreground"
+              className="text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-[#1c1917] transition-colors"
               href="/privacy"
             >
               Privacy
@@ -101,3 +100,4 @@ export function BlogClient() {
     </div>
   );
 }
+

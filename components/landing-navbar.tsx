@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight, Menu, Box } from "lucide-react";
+import { ArrowRight, Menu } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { useSession } from "@/lib/auth-client";
@@ -30,9 +31,13 @@ export function LandingNavbar() {
     <nav className="sticky top-0 z-50 bg-[#fafaf9] border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-24 flex items-center justify-between">
         <Link className="flex items-center gap-2 sm:gap-3" href="/">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#1c1917] flex items-center justify-center rounded-lg">
-            <Box className="text-stone-50 text-lg sm:text-xl" />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="dysumcorp logo"
+            width={40}
+            height={40}
+            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+          />
           <span className="serif-font text-xl sm:text-2xl font-bold tracking-tight text-[#1c1917]">
             dysumcorp
           </span>

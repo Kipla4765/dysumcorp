@@ -77,6 +77,7 @@ const features = [
     title: "Professional Branding",
     desc: "Maintain your firm's professional image with custom domains and white-labeling.",
     icon: Zap,
+    comingSoon: true,
     visual: (
       <div className="bg-stone-100 border border-stone-200 rounded-2xl p-6">
         <div className="flex items-center justify-between text-[11px] mb-3">
@@ -186,9 +187,14 @@ export default function FeaturesSection() {
             {features.map((feature, index) => (
               <StaggerItem key={index}>
                 <div
-                  className={`p-6 sm:p-8 lg:p-10 rounded-2xl lg:rounded-[2.5rem] border border-stone-100 flex flex-col justify-between premium-shadow-hover h-full ${feature.dark ? "bg-[#1c1917] text-stone-50" : "bg-white"
+                  className={`p-6 sm:p-8 lg:p-10 rounded-2xl lg:rounded-[2.5rem] border border-stone-100 flex flex-col justify-between premium-shadow-hover h-full relative ${feature.dark ? "bg-[#1c1917] text-stone-50" : "bg-white"
                     }`}
                 >
+                  {feature.comingSoon && (
+                    <div className="absolute top-5 right-5 bg-amber-100 text-amber-700 text-[9px] font-bold uppercase tracking-[0.15em] px-3 py-1 rounded-full border border-amber-200">
+                      Coming Soon
+                    </div>
+                  )}
                   <div>
                     <div
                       className={`inline-flex items-center gap-2 ${feature.dark

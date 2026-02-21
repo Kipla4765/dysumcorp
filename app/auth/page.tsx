@@ -71,18 +71,18 @@ export default function AuthPage() {
           </Link>
         </div>
       </nav>
-      <div className="flex min-h-[calc(100vh-6rem)] items-center justify-center">
-        <div className="w-full max-w-md space-y-8 rounded-lg border border-stone-200 bg-white p-8 shadow-sm">
+      <div className="flex min-h-[calc(100vh-6rem)] items-center justify-center px-4">
+        <div className="w-full max-w-md space-y-10 rounded-[2.5rem] border border-stone-200 bg-white p-10 shadow-sm premium-shadow">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-[#1c1917]">Sign In</h2>
-            <p className="mt-2 text-sm text-stone-600">
-              Choose a provider to sign in
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1c1917] serif-font">Sign In</h2>
+            <p className="mt-4 text-stone-600 font-medium">
+              Choose a provider to sign in to your workspace
             </p>
           </div>
 
-          <div className="mt-8 space-y-4">
+          <div className="space-y-4">
             <Button
-              className="w-full flex items-center justify-center gap-3 bg-[#1c1917] hover:bg-stone-800 text-stone-50"
+              className="w-full h-14 flex items-center justify-center gap-3 bg-[#1c1917] hover:bg-stone-800 text-stone-50 rounded-xl font-bold transition-all"
               disabled={loading !== null}
               onClick={() => handleOAuthSignIn("google")}
             >
@@ -108,11 +108,11 @@ export default function AuthPage() {
             </Button>
 
             <Button
-              className="w-full flex items-center justify-center gap-3 bg-[#0061fe] hover:bg-[#0052d9] text-white"
+              className="w-full h-14 flex items-center justify-center gap-3 bg-white border border-stone-200 hover:bg-stone-50 text-[#1c1917] rounded-xl font-bold transition-all"
               disabled={loading !== null}
               onClick={() => handleOAuthSignIn("dropbox")}
             >
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 text-[#0061fe]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6 1.807L0 5.629l6 3.822 6.001-3.822L6 1.807zM18 1.807l-6 3.822 6 3.822 6-3.822-6-3.822zM0 13.274l6 3.822 6.001-3.822L6 9.452l-6 3.822zM18 9.452l-6 3.822 6 3.822 6-3.822-6-3.822zM6 16.724l6.001 3.822 6-3.822L12 12.902l-6 3.822z" />
               </svg>
               {loading === "dropbox"
@@ -120,8 +120,13 @@ export default function AuthPage() {
                 : "Continue with Dropbox"}
             </Button>
           </div>
+
+          <p className="text-center text-xs font-bold uppercase tracking-widest text-stone-400">
+            Secure, encrypted access
+          </p>
         </div>
       </div>
     </main>
+
   );
 }

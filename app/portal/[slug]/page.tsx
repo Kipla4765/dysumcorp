@@ -530,28 +530,27 @@ export default function PublicPortalPage() {
               />
             )}
             <h1
-              className="text-2xl font-bold"
+              className="text-2xl md:text-3xl font-bold serif-font"
               style={{ color: portal.textColor }}
             >
               {portal.name}
             </h1>
-            <p className="mt-2 opacity-60" style={{ color: portal.textColor }}>
+            <p className="mt-2 text-stone-600 font-medium" style={{ color: portal.textColor }}>
               This portal is password protected
             </p>
           </div>
 
-          <form className="space-y-4" onSubmit={handlePasswordSubmit}>
+          <form className="space-y-6" onSubmit={handlePasswordSubmit}>
             <div className="relative">
               <Lock
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"
                 style={{ color: portal.textColor }}
               />
               <input
-                className="w-full pl-12 pr-4 py-3 rounded-xl border"
+                className="w-full pl-12 pr-4 py-4 rounded-xl border border-stone-200 outline-none focus:border-[#1c1917] transition-all font-medium"
                 placeholder="Enter password"
                 style={{
                   backgroundColor: portal.backgroundColor,
-                  borderColor: portal.primaryColor + "30",
                   color: portal.textColor,
                 }}
                 type="password"
@@ -560,16 +559,16 @@ export default function PublicPortalPage() {
               />
             </div>
             {passwordError && (
-              <p className="text-sm text-red-500">{passwordError}</p>
+              <p className="text-sm font-bold text-red-500">{passwordError}</p>
             )}
             <Button
-              className="w-full rounded-xl"
+              className="w-full py-6 bg-[#1c1917] text-stone-50 rounded-xl font-bold text-base hover:bg-stone-800 transition-all premium-shadow"
               disabled={authenticating}
               style={{ backgroundColor: portal.primaryColor }}
               type="submit"
             >
               {authenticating ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
               ) : (
                 "Access Portal"
               )}
@@ -581,34 +580,35 @@ export default function PublicPortalPage() {
   }
 
   return (
-    <div className="min-h-screen" style={getBrandingStyles()}>
+    <div className="min-h-screen selection:bg-stone-200" style={getBrandingStyles()}>
       {/* Header */}
       <header
-        className="border-b py-6 px-4 md:px-8"
+        className="border-b py-8 px-4 md:px-8 bg-white/50 backdrop-blur-sm"
         style={{
-          backgroundColor: portal.backgroundColor,
           borderColor: portal.primaryColor + "20",
         }}
       >
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             {portal.logoUrl && (
-              <img
-                alt={portal.name}
-                className="w-12 h-12 object-contain"
-                src={portal.logoUrl}
-              />
+              <div className="w-16 h-16 bg-white rounded-2xl border border-stone-100 flex items-center justify-center p-2 premium-shadow-sm">
+                <img
+                  alt={portal.name}
+                  className="w-full h-full object-contain"
+                  src={portal.logoUrl}
+                />
+              </div>
             )}
             <div>
               <h1
-                className="text-3xl font-bold"
+                className="text-3xl md:text-4xl font-bold serif-font text-[#1c1917]"
                 style={{ color: portal.textColor }}
               >
                 {portal.name}
               </h1>
               {portal.welcomeMessage && (
                 <p
-                  className="mt-2 text-lg opacity-80"
+                  className="mt-2 text-lg text-stone-600 font-medium"
                   style={{ color: portal.textColor }}
                 >
                   {portal.welcomeMessage}
@@ -621,36 +621,37 @@ export default function PublicPortalPage() {
 
       {/* Main Content */}
       <main
-        className="py-12 px-4 md:px-8"
+        className="py-16 px-4 md:px-8 bg-[#fafaf9]"
         style={{ backgroundColor: portal.backgroundColor }}
       >
         <div className="max-w-4xl mx-auto">
           {uploadStatus === "success" ? (
             <div
-              className="rounded-2xl p-8 text-center border"
+              className="rounded-[2.5rem] p-12 text-center bg-white border border-stone-100 premium-shadow"
               style={{
-                backgroundColor: portal.cardBackgroundColor,
                 borderColor: portal.primaryColor + "30",
               }}
             >
-              <CheckCircle
-                className="w-16 h-16 mx-auto mb-4"
-                style={{ color: portal.primaryColor }}
-              />
+              <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-8">
+                <CheckCircle
+                  className="w-10 h-10 text-emerald-500"
+                  style={{ color: portal.primaryColor }}
+                />
+              </div>
               <h2
-                className="text-2xl font-bold mb-2"
+                className="text-3xl font-bold serif-font mb-4 text-[#1c1917]"
                 style={{ color: portal.textColor }}
               >
                 {portal.successMessage}
               </h2>
               <p
-                className="opacity-60 mb-6"
+                className="text-lg text-stone-600 font-medium mb-10"
                 style={{ color: portal.textColor }}
               >
                 Your files have been securely uploaded. Thank you!
               </p>
               <Button
-                className="rounded-xl"
+                className="px-8 py-5 bg-[#1c1917] text-stone-50 rounded-xl font-bold text-lg hover:bg-stone-800 transition-all premium-shadow"
                 style={{ backgroundColor: portal.primaryColor }}
                 onClick={() => {
                   setUploadStatus("idle");
@@ -662,15 +663,14 @@ export default function PublicPortalPage() {
             </div>
           ) : (
             <div
-              className="rounded-2xl border overflow-hidden"
+              className="rounded-[2.5rem] bg-white border border-stone-100 premium-shadow overflow-hidden"
               style={{
-                backgroundColor: portal.cardBackgroundColor,
                 borderColor: portal.primaryColor + "20",
               }}
             >
-              <div className="p-6 md:p-8">
+              <div className="p-8 md:p-12">
                 <h2
-                  className="text-2xl font-bold mb-6"
+                  className="text-2xl md:text-3xl font-bold mb-8 serif-font text-[#1c1917]"
                   style={{ color: portal.textColor }}
                 >
                   Upload Your Files
@@ -678,20 +678,18 @@ export default function PublicPortalPage() {
 
                 {/* Client Information */}
                 {(portal.requireClientName || portal.requireClientEmail) && (
-                  <div className="space-y-4 mb-6">
+                  <div className="grid md:grid-cols-2 gap-8 mb-10">
                     {portal.requireClientName && (
-                      <div>
+                      <div className="space-y-3">
                         <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: portal.textColor }}
+                          className="block text-xs font-bold uppercase tracking-[0.2em] text-stone-500"
                         >
                           YOUR NAME *
                         </label>
                         <Input
-                          className="rounded-xl"
+                          className="h-14 rounded-xl border-stone-200 focus:border-[#1c1917] font-medium transition-all"
                           placeholder="John Doe"
                           style={{
-                            borderColor: portal.primaryColor + "30",
                             color: portal.textColor,
                           }}
                           type="text"
@@ -701,18 +699,16 @@ export default function PublicPortalPage() {
                       </div>
                     )}
                     {portal.requireClientEmail && (
-                      <div>
+                      <div className="space-y-3">
                         <label
-                          className="block text-sm font-medium mb-2"
-                          style={{ color: portal.textColor }}
+                          className="block text-xs font-bold uppercase tracking-[0.2em] text-stone-500"
                         >
                           YOUR EMAIL *
                         </label>
                         <Input
-                          className="rounded-xl"
+                          className="h-14 rounded-xl border-stone-200 focus:border-[#1c1917] font-medium transition-all"
                           placeholder="john@example.com"
                           style={{
-                            borderColor: portal.primaryColor + "30",
                             color: portal.textColor,
                           }}
                           type="email"
@@ -726,43 +722,40 @@ export default function PublicPortalPage() {
 
                 {/* File Upload Area */}
                 <div
-                  className="border-2 border-dashed rounded-xl p-12 text-center mb-6 transition-colors"
+                  className="border-2 border-dashed rounded-[2rem] p-12 md:p-20 text-center mb-10 transition-all bg-[#fafaf9] hover:bg-stone-50 group cursor-pointer"
                   style={{
-                    borderColor: portal.primaryColor + "30",
+                    borderColor: portal.primaryColor || "#e2e8f0",
                   }}
+                  onClick={() => document.getElementById("file-upload")?.click()}
                 >
-                  <Upload
-                    className="w-12 h-12 mx-auto mb-4 opacity-50"
-                    style={{ color: portal.primaryColor }}
-                  />
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 premium-shadow-sm group-hover:scale-110 transition-transform">
+                    <Upload
+                      className="w-8 h-8 text-[#1c1917]"
+                      style={{ color: portal.primaryColor }}
+                    />
+                  </div>
                   <p
-                    className="text-lg mb-2"
+                    className="text-xl font-bold text-[#1c1917] mb-2 serif-font"
                     style={{ color: portal.textColor }}
                   >
-                    Drag and drop files here, or click to select
+                    Drag and drop files here
                   </p>
                   <p
-                    className="text-sm opacity-60 mb-4"
+                    className="text-stone-500 font-medium mb-8"
                     style={{ color: portal.textColor }}
                   >
-                    Maximum file size:{" "}
-                    {portal
-                      ? `${(parseInt(portal.maxFileSize) / 1024 / 1024).toFixed(0)}MB`
-                      : "Loading..."}{" "}
-                    per file
+                    Or click to browse your computer
                   </p>
-                  {portal.allowedFileTypes &&
-                    portal.allowedFileTypes.length > 0 && (
-                      <p
-                        className="text-xs opacity-50 mb-4"
-                        style={{ color: portal.textColor }}
-                      >
-                        Allowed:{" "}
-                        {portal.allowedFileTypes
-                          .map((t) => t.split(",")[0])
-                          .join(", ")}
-                      </p>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <span className="px-4 py-1.5 bg-white rounded-full border border-stone-100 text-xs font-bold text-stone-500 uppercase tracking-widest shadow-sm">
+                      Max {portal ? `${(parseInt(portal.maxFileSize) / 1024 / 1024).toFixed(0)}MB` : "..."}
+                    </span>
+                    {portal.allowedFileTypes && portal.allowedFileTypes.length > 0 && (
+                      <span className="px-4 py-1.5 bg-white rounded-full border border-stone-100 text-xs font-bold text-stone-500 uppercase tracking-widest shadow-sm">
+                        {portal.allowedFileTypes.length} Types Allowed
+                      </span>
                     )}
+                  </div>
                   <input
                     multiple
                     className="hidden"
@@ -770,31 +763,17 @@ export default function PublicPortalPage() {
                     type="file"
                     onChange={handleFileChange}
                   />
-                  <Button
-                    className="rounded-xl"
-                    style={{
-                      borderColor: portal.primaryColor,
-                      color: portal.primaryColor,
-                    }}
-                    variant="outline"
-                    onClick={() =>
-                      document.getElementById("file-upload")?.click()
-                    }
-                  >
-                    SELECT FILES
-                  </Button>
                 </div>
 
                 {/* Selected Files */}
                 {files.length > 0 && portal && (
-                  <div className="mb-6">
+                  <div className="mb-10">
                     <h3
-                      className="font-semibold mb-3"
-                      style={{ color: portal.textColor }}
+                      className="text-sm font-bold uppercase tracking-widest text-stone-500 mb-4"
                     >
                       Selected Files ({files.length})
                     </h3>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {files.map((file, index) => {
                         const portalMaxSize = parseInt(portal.maxFileSize);
                         const isOversized = file.size > portalMaxSize;
@@ -812,9 +791,8 @@ export default function PublicPortalPage() {
                           >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <FileText
-                                className={`w-5 h-5 flex-shrink-0 ${
-                                  isOversized ? "text-red-500" : ""
-                                }`}
+                                className={`w-5 h-5 flex-shrink-0 ${isOversized ? "text-red-500" : ""
+                                  }`}
                                 style={{
                                   color: isOversized
                                     ? "#ef4444"
@@ -823,18 +801,18 @@ export default function PublicPortalPage() {
                               />
                               <div className="flex-1 min-w-0">
                                 <p
-                                  className="text-sm truncate"
+                                  className="text-sm font-bold truncate text-[#1c1917]"
                                   style={{ color: portal.textColor }}
                                 >
                                   {file.name}
                                   {isOversized && (
-                                    <span className="ml-2 text-xs font-bold text-red-500">
+                                    <span className="ml-2 text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
                                       TOO LARGE
                                     </span>
                                   )}
                                 </p>
                                 <p
-                                  className="text-xs opacity-60"
+                                  className="text-xs font-medium text-stone-500"
                                   style={{ color: portal.textColor }}
                                 >
                                   {(file.size / 1024 / 1024).toFixed(2)} MB
@@ -842,22 +820,22 @@ export default function PublicPortalPage() {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-4">
                               {uploading &&
                                 fileProgress[index] !== undefined && (
                                   <span
-                                    className="text-sm font-medium"
+                                    className="text-sm font-bold text-[#1c1917]"
                                     style={{ color: portal.primaryColor }}
                                   >
                                     {fileProgress[index]}%
                                   </span>
                                 )}
                               <button
-                                className="p-1 hover:bg-red-50 rounded"
+                                className="p-2 hover:bg-stone-100 rounded-xl transition-colors"
                                 disabled={uploading}
                                 onClick={() => removeFile(index)}
                               >
-                                <X className="w-4 h-4 text-red-500" />
+                                <X className="w-5 h-5 text-stone-400 hover:text-red-500" />
                               </button>
                             </div>
                           </div>
@@ -870,16 +848,17 @@ export default function PublicPortalPage() {
                 {/* Error Message */}
                 {uploadStatus === "error" && errorMessage && (
                   <div
-                    className="mb-6 p-4 rounded-xl border border-red-200"
-                    style={{ backgroundColor: "#fef2f2" }}
+                    className="mb-8 p-6 rounded-2xl border border-red-100 bg-red-50/50"
                   >
-                    <p className="text-red-600 text-sm">{errorMessage}</p>
+                    <p className="text-red-600 text-sm font-bold flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" /> {errorMessage}
+                    </p>
                   </div>
                 )}
 
                 {/* Upload Button */}
                 <Button
-                  className="w-full rounded-xl"
+                  className="w-full py-8 bg-[#1c1917] text-stone-50 rounded-2xl font-bold text-lg hover:bg-stone-800 transition-all premium-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={
                     files.length === 0 ||
                     uploading ||
@@ -891,7 +870,7 @@ export default function PublicPortalPage() {
                 >
                   {uploading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      <Loader2 className="w-5 h-5 animate-spin mr-3" />
                       UPLOADING...
                     </>
                   ) : (
@@ -904,22 +883,36 @@ export default function PublicPortalPage() {
 
           {/* Security Notice */}
           <div
-            className="mt-8 p-4 rounded-xl border text-center"
+            className="mt-12 p-6 rounded-3xl border border-stone-100 bg-white/50 premium-shadow-sm text-center"
             style={{
-              backgroundColor: portal.cardBackgroundColor,
               borderColor: portal.primaryColor + "20",
             }}
           >
             <p
-              className="text-sm opacity-60"
+              className="text-sm font-medium text-stone-500 flex items-center justify-center gap-2"
               style={{ color: portal.textColor }}
             >
-              🔒 Your files are encrypted and securely stored. We take your
+              <Lock className="w-4 h-4" /> Your files are encrypted and securely stored. We take your
               privacy seriously.
             </p>
           </div>
         </div>
       </main>
+
+      <footer className="border-t border-stone-200 py-12 px-4 md:px-8 lg:px-16 bg-[#fafaf9]">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2 opacity-50 grayscale">
+            <div className="w-8 h-8 bg-[#1c1917] flex items-center justify-center rounded-lg">
+              <span className="text-stone-50 font-bold text-sm">D</span>
+            </div>
+            <span className="serif-font font-bold text-[#1c1917]">dysumcorp</span>
+          </div>
+          <span className="text-sm font-medium text-stone-400 italic">
+            Powered by Dysumcorp. Securely collect files.
+          </span>
+        </div>
+      </footer>
     </div>
   );
 }
+

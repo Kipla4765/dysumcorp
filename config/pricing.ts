@@ -78,13 +78,11 @@ export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
     features: [
       "Unlimited Portals",
       "500GB Storage",
-      "1 Custom domain",
       "Full white-labeling",
       "Password protection",
       "Expiring links",
       "Advanced analytics",
       "Custom branding & themes",
-      "API access",
       "Priority email support",
     ],
     popular: true,

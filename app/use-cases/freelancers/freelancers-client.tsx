@@ -48,50 +48,36 @@ const useCases = [
   "Invoice and payment documents",
 ];
 
+import { LandingNavbar } from "@/components/landing-navbar";
+
 export function FreelancersClient() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 px-4 md:px-8 lg:px-16 bg-background/80 backdrop-blur-md border-b border-border/40">
-        <div className="flex h-16 items-center justify-between max-w-7xl mx-auto">
-          <Link className="flex items-center gap-2" href="/">
-            <div className="flex items-center space-x-2">
-              <span className="font-mono text-xl font-bold">Dysumcorp</span>
-            </div>
-          </Link>
-          <div className="flex items-center space-x-4">
-            <Button
-              className="rounded-none bg-[#334155] hover:bg-[rgba(51,65,85,0.9)] font-mono"
-              onClick={() => (window.location.href = "/auth")}
-            >
-              GET STARTED <ArrowRight className="ml-1 w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#fafaf9] selection:bg-stone-200">
+      <LandingNavbar />
 
       <main>
-        <section className="py-20 px-4 md:px-8 lg:px-16">
+        <section className="py-20 px-4 md:px-8 lg:px-16 lg:py-32">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-[rgba(51,65,85,0.1)] text-[#334155] px-4 py-2 rounded-full text-sm font-mono font-semibold mb-6">
+            <div className="inline-flex items-center gap-2 bg-stone-100 text-[#1c1917] px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-8">
               <Users className="h-4 w-4" />
               For Freelancers
             </div>
-            <h1 className="font-mono text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold serif-font text-[#1c1917] mb-8 leading-[1.1]">
               Collect Client Files Without the Email Chase
             </h1>
-            <p className="text-xl text-muted-foreground font-mono mb-8 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-stone-700 font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
               Designers, developers, writers & consultants collect files from
               clients directly to cloud storage. No client account required.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Button
-                className="rounded-none bg-[#334155] hover:bg-[rgba(51,65,85,0.9)] font-mono text-lg px-8 py-6"
+                className="px-10 py-6 bg-[#1c1917] text-stone-50 rounded-xl font-bold text-lg hover:bg-stone-800 transition-all premium-shadow flex items-center justify-center gap-3"
                 onClick={() => (window.location.href = "/auth")}
               >
                 Start Free Account <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Button
-                className="rounded-none border-2 border-foreground hover:bg-foreground hover:text-background font-mono text-lg px-8 py-6"
+                className="px-10 py-6 bg-white border border-stone-200 text-[#1c1917] rounded-xl font-bold text-lg hover:bg-stone-50 transition-colors"
                 variant="outline"
                 onClick={() => (window.location.href = "/pricing")}
               >
@@ -101,28 +87,28 @@ export function FreelancersClient() {
           </div>
         </section>
 
-        <section className="py-16 px-4 md:px-8 lg:px-16 bg-muted/30">
+        <section className="py-24 px-4 md:px-8 lg:px-16 bg-white/50">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-mono font-bold text-center mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold serif-font text-center mb-6 text-[#1c1917]">
               Everything You Need to Collect Client Files
             </h2>
-            <p className="text-muted-foreground font-mono text-center mb-12 max-w-2xl mx-auto">
+            <p className="text-stone-600 font-medium text-center mb-16 max-w-2xl mx-auto text-lg leading-relaxed">
               Built specifically for freelance professionals who need a simple,
               secure way to receive files from clients.
             </p>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {features.map((feature) => (
                 <div
                   key={feature.title}
-                  className="p-6 bg-background rounded-lg border"
+                  className="p-8 bg-white rounded-3xl border border-stone-100 premium-shadow-hover"
                 >
-                  <div className="rounded-full bg-[rgba(51,65,85,0.1)] p-3 w-fit mb-4">
-                    <feature.icon className="h-6 w-6 text-[#334155]" />
+                  <div className="rounded-2xl bg-stone-50 p-4 w-fit mb-6">
+                    <feature.icon className="h-6 w-6 text-[#1c1917]" />
                   </div>
-                  <h3 className="font-mono font-bold text-lg mb-2">
+                  <h3 className="text-xl font-bold text-[#1c1917] mb-3 serif-font">
                     {feature.title}
                   </h3>
-                  <p className="text-muted-foreground font-mono text-sm">
+                  <p className="text-stone-600 font-medium text-sm leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -131,35 +117,37 @@ export function FreelancersClient() {
           </div>
         </section>
 
-        <section className="py-16 px-4 md:px-8 lg:px-16">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-mono font-bold text-center mb-12">
+        <section className="py-24 px-4 md:px-8 lg:px-16">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold serif-font mb-12 text-[#1c1917]">
               What Freelancers Use Dysumcorp For
             </h2>
             <div className="grid md:grid-cols-2 gap-4">
               {useCases.map((useCase) => (
                 <div
                   key={useCase}
-                  className="flex items-center gap-3 p-4 bg-muted/20 rounded-lg"
+                  className="flex items-center gap-4 p-5 bg-white border border-stone-100 rounded-2xl text-left"
                 >
-                  <Check className="h-5 w-5 text-[#334155] flex-shrink-0" />
-                  <span className="font-mono">{useCase}</span>
+                  <div className="w-8 h-8 rounded-full bg-stone-50 flex items-center justify-center flex-shrink-0">
+                    <Check className="h-4 w-4 text-[#1c1917]" />
+                  </div>
+                  <span className="font-bold text-[#1c1917] text-sm uppercase tracking-wide">{useCase}</span>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="py-16 px-4 md:px-8 lg:px-16 bg-[#334155]">
+        <section className="py-24 px-4 md:px-8 lg:px-16 bg-[#1c1917] text-stone-50">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-mono font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold serif-font mb-6">
               Ready to Simplify Your File Collection?
             </h2>
-            <p className="text-white/80 font-mono mb-8">
+            <p className="text-stone-400 font-medium mb-10 text-lg">
               Join thousands of freelancers who collect client files 10x faster.
             </p>
             <Button
-              className="rounded-none bg-white text-[#334155] hover:bg-white/90 font-mono text-lg px-8 py-6"
+              className="px-8 py-5 bg-stone-50 text-[#1c1917] rounded-xl font-bold text-lg hover:bg-stone-200 transition-colors"
               onClick={() => (window.location.href = "/auth")}
             >
               Start Free Account <ArrowRight className="ml-2 w-5 h-5" />
@@ -168,28 +156,32 @@ export function FreelancersClient() {
         </section>
       </main>
 
-      <footer className="border-t border-border/40 py-8 px-4 md:px-8 lg:px-16">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-stone-200 py-12 px-4 md:px-8 lg:px-16 bg-white/50">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-muted-foreground">
-              © 2025 Dysumcorp. All rights reserved.
-            </span>
+            <div className="w-8 h-8 bg-[#1c1917] flex items-center justify-center rounded-lg">
+              <span className="text-stone-50 font-bold text-sm">D</span>
+            </div>
+            <span className="serif-font font-bold text-[#1c1917]">dysumcorp</span>
           </div>
-          <nav className="flex items-center gap-6">
+          <span className="text-sm font-medium text-stone-500">
+            © 2025 Dysumcorp. All rights reserved.
+          </span>
+          <nav className="flex gap-8">
             <Link
-              className="text-sm font-mono text-muted-foreground hover:text-foreground"
+              className="text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-[#1c1917] transition-colors"
               href="/terms"
             >
               Terms
             </Link>
             <Link
-              className="text-sm font-mono text-muted-foreground hover:text-foreground"
+              className="text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-[#1c1917] transition-colors"
               href="/privacy"
             >
               Privacy
             </Link>
             <Link
-              className="text-sm font-mono text-muted-foreground hover:text-foreground"
+              className="text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-[#1c1917] transition-colors"
               href="/contact"
             >
               Contact
@@ -200,3 +192,4 @@ export function FreelancersClient() {
     </div>
   );
 }
+
