@@ -126,8 +126,11 @@ async function withRetry<T>(
     return await fn();
   } catch (error) {
     if (retries <= 0) throw error;
-    console.warn(`Retry attempt remaining: ${retries}. Retrying in ${delay}ms...`);
+    console.warn(
+      `Retry attempt remaining: ${retries}. Retrying in ${delay}ms...`,
+    );
     await new Promise((resolve) => setTimeout(resolve, delay));
+
     return withRetry(fn, retries - 1, delay * 2);
   }
 }
@@ -165,6 +168,7 @@ async function uploadDirectToCloudChunked(
 
     if (!uploadUrlResponse.ok) {
       const errorData = await uploadUrlResponse.json();
+
       throw new Error(errorData.error || "Failed to get upload session");
     }
 
@@ -179,6 +183,7 @@ async function uploadDirectToCloudChunked(
         file,
         onProgress,
       );
+
       storageUrl = result.webViewLink || "";
       storageFileId = result.id;
     } else if (uploadData.provider === "dropbox") {
@@ -188,27 +193,30 @@ async function uploadDirectToCloudChunked(
         file,
         onProgress,
       );
+
       storageUrl = "";
       storageFileId = result.id;
     }
 
     // Step 3: Confirm upload and save metadata
-    const confirmResponse = await withRetry(() => fetch("/api/portals/confirm-upload", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        portalId,
-        fileName: file.name,
-        fileSize: file.size,
-        mimeType: file.type,
-        storageUrl,
-        storageFileId,
-        password,
-        uploaderName,
-        uploaderEmail,
-        skipNotification,
+    const confirmResponse = await withRetry(() =>
+      fetch("/api/portals/confirm-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          portalId,
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+          storageUrl,
+          storageFileId,
+          password,
+          uploaderName,
+          uploaderEmail,
+          skipNotification,
+        }),
       }),
-    }));
+    );
 
     if (!confirmResponse.ok) {
       throw new Error("Failed to confirm upload");
@@ -223,6 +231,7 @@ async function uploadDirectToCloudChunked(
     };
   } catch (error) {
     console.error("Direct chunked upload error:", error);
+
     return {
       success: false,
       error: error instanceof Error ? error.message : "Upload failed",
@@ -243,7 +252,10 @@ async function uploadToGoogleDriveChunked(
   let uploadedBytes = 0;
 
   while (uploadedBytes < totalSize) {
-    const chunk = file.slice(uploadedBytes, Math.min(uploadedBytes + CHUNK_SIZE, totalSize));
+    const chunk = file.slice(
+      uploadedBytes,
+      Math.min(uploadedBytes + CHUNK_SIZE, totalSize),
+    );
     const chunkStart = uploadedBytes;
     const chunkEnd = chunkStart + chunk.size - 1;
 
@@ -277,14 +289,17 @@ async function uploadToGoogleDriveChunked(
   // After loop, we need to get the final response if the last chunk didn't return it
   // But in the logic above, we should have it. Let's refine to return the result.
   // We'll verify the last chunk's JSON response.
-  const finalResponse = await withRetry(() => fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Range": `bytes */${totalSize}`,
-    }
-  }));
+  const finalResponse = await withRetry(() =>
+    fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Range": `bytes */${totalSize}`,
+      },
+    }),
+  );
 
   if (onProgress) onProgress(100);
+
   return await finalResponse.json();
 }
 
@@ -300,17 +315,21 @@ async function uploadToDropboxChunked(
   const totalSize = file.size;
 
   // Step 1: Start Session
-  const startResponse = await withRetry(() => fetch("https://content.dropboxapi.com/2/files/upload_session/start", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Dropbox-API-Arg": JSON.stringify({ close: false }),
-      "Content-Type": "application/octet-stream",
-    }
-  }));
+  const startResponse = await withRetry(() =>
+    fetch("https://content.dropboxapi.com/2/files/upload_session/start", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Dropbox-API-Arg": JSON.stringify({ close: false }),
+        "Content-Type": "application/octet-stream",
+      },
+    }),
+  );
 
   if (!startResponse.ok) {
-    throw new Error(`Dropbox start session failed: ${startResponse.statusText}`);
+    throw new Error(
+      `Dropbox start session failed: ${startResponse.statusText}`,
+    );
   }
 
   const { session_id } = await startResponse.json();
@@ -320,18 +339,20 @@ async function uploadToDropboxChunked(
   while (uploadedBytes < totalSize - CHUNK_SIZE) {
     const chunk = file.slice(uploadedBytes, uploadedBytes + CHUNK_SIZE);
 
-    await withRetry(() => fetch("https://content.dropboxapi.com/2/files/upload_session/append_v2", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Dropbox-API-Arg": JSON.stringify({
-          cursor: { session_id, offset: uploadedBytes },
-          close: false,
-        }),
-        "Content-Type": "application/octet-stream",
-      },
-      body: chunk,
-    }));
+    await withRetry(() =>
+      fetch("https://content.dropboxapi.com/2/files/upload_session/append_v2", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Dropbox-API-Arg": JSON.stringify({
+            cursor: { session_id, offset: uploadedBytes },
+            close: false,
+          }),
+          "Content-Type": "application/octet-stream",
+        },
+        body: chunk,
+      }),
+    );
 
     uploadedBytes += chunk.size;
     if (onProgress) onProgress((uploadedBytes / totalSize) * 100);
@@ -339,28 +360,31 @@ async function uploadToDropboxChunked(
 
   // Step 3: Finish Session
   const finalChunk = file.slice(uploadedBytes);
-  const finishResponse = await withRetry(() => fetch("https://content.dropboxapi.com/2/files/upload_session/finish", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Dropbox-API-Arg": JSON.stringify({
-        cursor: { session_id, offset: uploadedBytes },
-        commit: {
-          path: path.startsWith("/") ? path : `/${path}`,
-          mode: "add",
-          autorename: true,
-        },
-      }),
-      "Content-Type": "application/octet-stream",
-    },
-    body: finalChunk,
-  }));
+  const finishResponse = await withRetry(() =>
+    fetch("https://content.dropboxapi.com/2/files/upload_session/finish", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Dropbox-API-Arg": JSON.stringify({
+          cursor: { session_id, offset: uploadedBytes },
+          commit: {
+            path: path.startsWith("/") ? path : `/${path}`,
+            mode: "add",
+            autorename: true,
+          },
+        }),
+        "Content-Type": "application/octet-stream",
+      },
+      body: finalChunk,
+    }),
+  );
 
   if (!finishResponse.ok) {
     throw new Error(`Dropbox finish failed: ${finishResponse.statusText}`);
   }
 
   if (onProgress) onProgress(100);
+
   return await finishResponse.json();
 }
 
@@ -378,7 +402,7 @@ export async function uploadFiles(
     const result = await uploadFile({
       ...options,
       file,
-      skipNotification: true // Skip individual notification for batch uploads
+      skipNotification: true, // Skip individual notification for batch uploads
     });
 
     results.push(result);
@@ -401,9 +425,14 @@ export async function uploadFiles(
           uploaderEmail: options.uploaderEmail,
         }),
       });
-      console.log(`[Upload Manager] Batch notification sent for ${successfulFiles.length} files`);
+      console.log(
+        `[Upload Manager] Batch notification sent for ${successfulFiles.length} files`,
+      );
     } catch (error) {
-      console.error("[Upload Manager] Failed to send batch notification:", error);
+      console.error(
+        "[Upload Manager] Failed to send batch notification:",
+        error,
+      );
       // Don't fail the whole process if notification fails
     }
   }

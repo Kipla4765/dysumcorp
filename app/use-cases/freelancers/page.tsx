@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { FreelancersClient } from "./freelancers-client";
 
 export const metadata: Metadata = {

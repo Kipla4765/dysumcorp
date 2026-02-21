@@ -123,7 +123,9 @@ export async function POST(request: NextRequest) {
         // Don't fail the upload if email fails
       }
     } else {
-      console.log("[Portal Confirm Upload] Email notification skipped (batch mode)");
+      console.log(
+        "[Portal Confirm Upload] Email notification skipped (batch mode)",
+      );
     }
 
     return NextResponse.json({

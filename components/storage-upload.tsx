@@ -55,7 +55,8 @@ export function StorageUpload() {
     <div className="space-y-3 sm:space-y-4 p-4 sm:border rounded-lg border-border">
       <h2 className="text-lg sm:text-2xl font-bold">Resilient Cloud Upload</h2>
       <p className="text-sm text-muted-foreground">
-        Large files are split into chunks with automatic retries for maximum reliability.
+        Large files are split into chunks with automatic retries for maximum
+        reliability.
       </p>
 
       <div className="space-y-2">
@@ -107,7 +108,9 @@ export function StorageUpload() {
       {error && (
         <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded text-destructive text-xs sm:text-sm">
           <strong>Upload Error:</strong> {error}
-          <p className="mt-1 opacity-80">The system will automatically retry failed chunks before giving up.</p>
+          <p className="mt-1 opacity-80">
+            The system will automatically retry failed chunks before giving up.
+          </p>
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createCheckout } from "@creem_io/better-auth/server";
+
 import { auth, prisma } from "@/lib/auth";
 import { PRICING_PLANS } from "@/config/pricing";
 

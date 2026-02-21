@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { MarketingAgenciesClient } from "./marketing-agencies-client";
 
 export const metadata: Metadata = {

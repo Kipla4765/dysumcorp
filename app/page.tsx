@@ -8,8 +8,12 @@ import HowItWorks from "@/components/how-it-works";
 const FeaturesSection = dynamic(() => import("@/components/features-section"));
 const PricingSection = dynamic(() => import("@/components/pricing-section"));
 const SecuritySection = dynamic(() => import("@/components/security-section"));
-const IntegrationsSection = dynamic(() => import("@/components/integrations-section"));
-const TestimonialsSection = dynamic(() => import("@/components/testimonials-section"));
+const IntegrationsSection = dynamic(
+  () => import("@/components/integrations-section"),
+);
+const TestimonialsSection = dynamic(
+  () => import("@/components/testimonials-section"),
+);
 const CTASection = dynamic(() => import("@/components/cta-section"));
 
 export default function Home() {

@@ -60,91 +60,71 @@ export default function CTASection() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-16">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-12 sm:gap-16">
               <div className="space-y-4">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#1c1917]">
                   Product
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <a
-                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#features"
-                    >
-                      Features
-                    </a>
+                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#features">Features</a>
                   </li>
                   <li>
-                    <a
-                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#pricing"
-                    >
-                      Pricing
-                    </a>
+                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#pricing">Pricing</a>
                   </li>
                   <li>
-                    <a
-                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#"
-                    >
-                      API
-                    </a>
+                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/blog">Blog</a>
+                  </li>
+                  <li>
+                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#security">Security</a>
                   </li>
                 </ul>
               </div>
+
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#1c1917]">
+                  Use Cases
+                </h4>
+                <ul className="space-y-3">
+                  <li>
+                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/accountants">Accountants</Link>
+                  </li>
+                  <li>
+                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/lawyers">Lawyers</Link>
+                  </li>
+                  <li>
+                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/freelancers">Freelancers</Link>
+                  </li>
+                  <li>
+                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/marketing-agencies">Agencies</Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#1c1917]">
+                  Integrations
+                </h4>
+                <ul className="space-y-3">
+                  <li>
+                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/integrations/google-drive">Google Drive</Link>
+                  </li>
+                  <li>
+                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/integrations/dropbox">Dropbox</Link>
+                  </li>
+                </ul>
+              </div>
+
               <div className="space-y-4">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#1c1917]">
                   Legal
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <a
-                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#"
-                    >
-                      Privacy
-                    </a>
+                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#">Privacy</a>
                   </li>
                   <li>
-                    <a
-                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#"
-                    >
-                      Terms
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#security"
-                    >
-                      Security
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#1c1917]">
-                  Social
-                </h4>
-                <ul className="space-y-3">
-                  <li>
-                    <a
-                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors flex items-center gap-2"
-                      href="#"
-                    >
-                      <Twitter className="w-4 h-4" />
-                      Twitter
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors flex items-center gap-2"
-                      href="#"
-                    >
-                      <Linkedin className="w-4 h-4" />
-                      LinkedIn
-                    </a>
+                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#">Terms</a>
                   </li>
                 </ul>
               </div>

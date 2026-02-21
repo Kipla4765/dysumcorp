@@ -1,8 +1,5 @@
 import { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, Shield } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { AccountantsClient } from "@/app/use-cases/accountants/accountants-client";
 
 export const metadata: Metadata = {

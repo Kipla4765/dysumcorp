@@ -1,5 +1,4 @@
 import Image from "next/image";
-
 import { Quote } from "lucide-react";
 
 import { FadeIn } from "./animations";
@@ -29,9 +28,9 @@ export default function TestimonialsSection() {
           <div className="flex flex-col items-center gap-6">
             <div className="w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden relative">
               <Image
+                fill
                 alt={testimonial.name}
                 className="object-cover grayscale"
-                fill
                 src={testimonial.image}
               />
             </div>

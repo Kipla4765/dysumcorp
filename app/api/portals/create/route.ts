@@ -169,7 +169,7 @@ export async function POST(request: Request) {
     // Get user's default branding
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { portalLogo: true }
+      select: { portalLogo: true },
     });
 
     // Create the portal

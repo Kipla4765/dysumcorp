@@ -6,12 +6,12 @@ import {
   MessageSquare,
   HelpCircle,
   ChevronRight,
-  Mail,
   Send,
   CheckCircle,
 } from "lucide-react";
-import { useSession } from "@/lib/auth-client";
 import { useEffect } from "react";
+
+import { useSession } from "@/lib/auth-client";
 
 export default function SupportPage() {
   const [activeTab, setActiveTab] = useState("contact");
@@ -144,10 +144,11 @@ export default function SupportPage() {
               return (
                 <button
                   key={tab.id}
-                  className={`w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 group ${isActive
-                    ? "bg-card shadow-sm border border-border text-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
+                  className={`w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 group ${
+                    isActive
+                      ? "bg-card shadow-sm border border-border text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                 >
@@ -167,7 +168,6 @@ export default function SupportPage() {
               );
             })}
           </nav>
-
         </aside>
 
         {/* Content Area */}
@@ -375,8 +375,9 @@ export default function SupportPage() {
                               {faq.question}
                             </span>
                             <ChevronRight
-                              className={`w-4 sm:w-5 h-4 sm:h-5 text-muted-foreground flex-shrink-0 transition-transform ${expandedFaq === index ? "rotate-90" : ""
-                                }`}
+                              className={`w-4 sm:w-5 h-4 sm:h-5 text-muted-foreground flex-shrink-0 transition-transform ${
+                                expandedFaq === index ? "rotate-90" : ""
+                              }`}
                             />
                           </button>
                           <AnimatePresence>

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { LawyersClient } from "./lawyers-client";
 
 export const metadata: Metadata = {

@@ -1,5 +1,7 @@
 import { Metadata } from "next";
+
 import { DropboxClient } from "./dropbox-client";
+
 import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {

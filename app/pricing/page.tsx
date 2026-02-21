@@ -1,5 +1,7 @@
 import { Metadata } from "next";
+
 import { PricingClient } from "./pricing-client";
+
 import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {

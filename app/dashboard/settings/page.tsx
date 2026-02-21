@@ -141,10 +141,12 @@ export default function SettingsPage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (!file) return;
 
     setIsUploading(true);
     const formData = new FormData();
+
     formData.append("file", file);
     formData.append("folder", "profiles");
 
@@ -157,6 +159,7 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error("Upload failed");
 
       const data = await res.json();
+
       setImage(data.url);
 
       // Auto-save the new image
@@ -179,10 +182,12 @@ export default function SettingsPage() {
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (!file) return;
 
     setIsUploadingLogo(true);
     const formData = new FormData();
+
     formData.append("file", file);
     formData.append("folder", "portals/defaults");
 
@@ -195,6 +200,7 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error("Upload failed");
 
       const data = await res.json();
+
       setPortalLogo(data.url);
 
       // Auto-save the new logo
@@ -305,10 +311,11 @@ export default function SettingsPage() {
               return (
                 <button
                   key={tab.id}
-                  className={`w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 group ${isActive
-                    ? "bg-card shadow-sm border border-border text-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
+                  className={`w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 group ${
+                    isActive
+                      ? "bg-card shadow-sm border border-border text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                 >
@@ -362,7 +369,11 @@ export default function SettingsPage() {
                         <div className="relative group">
                           <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-2 border-border bg-muted flex items-center justify-center relative">
                             {image ? (
-                              <img src={image} alt="Profile" className="w-full h-full object-cover" />
+                              <img
+                                alt="Profile"
+                                className="w-full h-full object-cover"
+                                src={image}
+                              />
                             ) : (
                               <User className="w-12 h-12 text-muted-foreground" />
                             )}
@@ -373,31 +384,35 @@ export default function SettingsPage() {
                             )}
                           </div>
                           <label
-                            htmlFor="profile-image"
                             className="absolute -right-2 -bottom-2 p-2 bg-primary text-primary-foreground rounded-xl shadow-lg cursor-pointer hover:scale-110 transition-transform"
+                            htmlFor="profile-image"
                           >
                             <Camera className="w-4 h-4" />
                           </label>
                           <input
-                            type="file"
-                            id="profile-image"
-                            className="hidden"
                             accept="image/*"
-                            onChange={handleImageUpload}
+                            className="hidden"
                             disabled={isUploading}
+                            id="profile-image"
+                            type="file"
+                            onChange={handleImageUpload}
                           />
                         </div>
                         <div className="text-center sm:text-left">
-                          <h3 className="text-lg font-bold text-foreground">Profile Picture</h3>
+                          <h3 className="text-lg font-bold text-foreground">
+                            Profile Picture
+                          </h3>
                           <p className="text-xs text-muted-foreground mt-1">
                             PNG, JPG or GIF. Max 5MB.
                           </p>
                           <Button
-                            variant="outline"
-                            size="sm"
                             className="mt-3 h-8 text-[10px] font-bold uppercase tracking-wider"
-                            onClick={() => document.getElementById("profile-image")?.click()}
                             disabled={isUploading}
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              document.getElementById("profile-image")?.click()
+                            }
                           >
                             Change Photo
                           </Button>
@@ -442,10 +457,11 @@ export default function SettingsPage() {
 
                       {profileStatus !== "idle" && (
                         <div
-                          className={`p-3 sm:p-4 rounded-xl text-xs sm:text-sm font-medium ${profileStatus === "success"
-                            ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                            : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-                            }`}
+                          className={`p-3 sm:p-4 rounded-xl text-xs sm:text-sm font-medium ${
+                            profileStatus === "success"
+                              ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                              : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                          }`}
                         >
                           {profileStatus === "success"
                             ? "Profile updated successfully!"
@@ -474,7 +490,11 @@ export default function SettingsPage() {
                           <div className="relative group">
                             <div className="w-48 h-24 rounded-xl overflow-hidden border border-border bg-card flex items-center justify-center relative">
                               {portalLogo ? (
-                                <img src={portalLogo} alt="Portal Logo" className="max-w-full max-h-full object-contain p-2" />
+                                <img
+                                  alt="Portal Logo"
+                                  className="max-w-full max-h-full object-contain p-2"
+                                  src={portalLogo}
+                                />
                               ) : (
                                 <Palette className="w-8 h-8 text-muted-foreground/30" />
                               )}
@@ -485,40 +505,47 @@ export default function SettingsPage() {
                               )}
                             </div>
                             <label
-                              htmlFor="default-logo"
                               className="absolute -right-2 -bottom-2 p-2 bg-primary text-primary-foreground rounded-xl shadow-lg cursor-pointer hover:scale-110 transition-transform"
+                              htmlFor="default-logo"
                             >
                               <Upload className="w-4 h-4" />
                             </label>
                             <input
-                              type="file"
-                              id="default-logo"
-                              className="hidden"
                               accept="image/*"
-                              onChange={handleLogoUpload}
+                              className="hidden"
                               disabled={isUploadingLogo}
+                              id="default-logo"
+                              type="file"
+                              onChange={handleLogoUpload}
                             />
                           </div>
                           <div className="flex-1 text-center sm:text-left">
-                            <p className="text-sm font-bold text-foreground">Generic Brand Asset</p>
+                            <p className="text-sm font-bold text-foreground">
+                              Generic Brand Asset
+                            </p>
                             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                              This logo will be used as the default for all new portals you create.
-                              Translucent PNG or SVG recommended.
+                              This logo will be used as the default for all new
+                              portals you create. Translucent PNG or SVG
+                              recommended.
                             </p>
                             <div className="flex flex-wrap gap-2 mt-4 justify-center sm:justify-start">
                               <Button
-                                size="sm"
                                 className="h-8 rounded-lg text-[10px] font-bold uppercase tracking-wider"
-                                onClick={() => document.getElementById("default-logo")?.click()}
                                 disabled={isUploadingLogo}
+                                size="sm"
+                                onClick={() =>
+                                  document
+                                    .getElementById("default-logo")
+                                    ?.click()
+                                }
                               >
                                 Upload New Logo
                               </Button>
                               {portalLogo && (
                                 <Button
-                                  variant="outline"
-                                  size="sm"
                                   className="h-8 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+                                  size="sm"
+                                  variant="outline"
                                   onClick={() => setPortalLogo("")}
                                 >
                                   Remove
@@ -531,8 +558,9 @@ export default function SettingsPage() {
 
                       <div className="p-4 bg-primary/10 rounded-xl border border-primary/20">
                         <p className="text-xs text-primary font-medium leading-relaxed">
-                          <strong>Pro Tip:</strong> Setting a default logo here saves you time when setting up new client portals.
-                          You can always override this on a per-portal basis.
+                          <strong>Pro Tip:</strong> Setting a default logo here
+                          saves you time when setting up new client portals. You
+                          can always override this on a per-portal basis.
                         </p>
                       </div>
                     </div>
@@ -590,10 +618,11 @@ export default function SettingsPage() {
 
                       {notificationsStatus !== "idle" && (
                         <div
-                          className={`p-3 sm:p-4 rounded-xl text-xs sm:text-sm font-medium ${notificationsStatus === "success"
-                            ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                            : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-                            }`}
+                          className={`p-3 sm:p-4 rounded-xl text-xs sm:text-sm font-medium ${
+                            notificationsStatus === "success"
+                              ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                              : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                          }`}
                         >
                           {notificationsStatus === "success"
                             ? "Notifications updated successfully!"
@@ -715,10 +744,11 @@ export default function SettingsPage() {
 
                           {notificationsStatus !== "idle" && (
                             <div
-                              className={`p-3 sm:p-4 rounded-xl text-xs sm:text-sm font-medium ${notificationsStatus === "success"
-                                ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                                : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-                                }`}
+                              className={`p-3 sm:p-4 rounded-xl text-xs sm:text-sm font-medium ${
+                                notificationsStatus === "success"
+                                  ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                                  : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                              }`}
                             >
                               {notificationsStatus === "success"
                                 ? "Account deletion initiated"

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+
 import { PhotographersClient } from "./photographers-client";
 
 export const metadata: Metadata = {

@@ -149,10 +149,11 @@ export default function BillingPage() {
               return (
                 <button
                   key={tab.id}
-                  className={`w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all ${isActive
+                  className={`w-full flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all ${
+                    isActive
                       ? "bg-card border border-border text-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
+                  }`}
                   onClick={() => setActiveTab(tab.id)}
                 >
                   <Icon className="w-4 sm:w-5 h-4 sm:h-5" />

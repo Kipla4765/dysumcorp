@@ -11,7 +11,6 @@ import { fontSans } from "@/config/fonts";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/JsonLd";
 import { FacebookPixel } from "@/components/seo/FacebookPixel";
 
-
 export const metadata: Metadata = {
   metadataBase: new URL("https://dysumcorp.pro"),
   title: {

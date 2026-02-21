@@ -127,8 +127,8 @@ export function SubscriptionManager({
         if (portalError || !portalData || "error" in portalData) {
           throw new Error(
             (portalError as any)?.message ||
-            (portalData as any)?.error ||
-            "Failed to open customer portal",
+              (portalData as any)?.error ||
+              "Failed to open customer portal",
           );
         }
 

@@ -11,8 +11,8 @@ const navigationItems = [
   { title: "Use Cases", href: "#use-cases" },
   { title: "Features", href: "#features" },
   { title: "Pricing", href: "#pricing" },
+  { title: "Blog", href: "/blog" },
   { title: "Security", href: "#security" },
-  { title: "Integrations", href: "#integrations" },
 ];
 
 export function LandingNavbar() {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cancelSubscription } from "@creem_io/better-auth/server";
+
 import { auth, prisma } from "@/lib/auth";
 
 export async function POST(request: Request) {
