@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { PricingCard } from "@/components/pricing-card";
 import { PRICING_PLANS } from "@/config/pricing";
 import { useSession } from "@/lib/auth-client";
-
 import { Button } from "@/components/ui/button";
 import { LandingNavbar } from "@/components/landing-navbar";
 
@@ -79,7 +78,8 @@ export function PricingClient() {
                 tabList: "bg-white border border-stone-200 rounded-full p-1",
                 cursor: "bg-[#1c1917]",
                 tab: "text-stone-600 data-[selected=true]:text-stone-50",
-                tabContent: "group-data-[selected=true]:text-stone-50 font-bold",
+                tabContent:
+                  "group-data-[selected=true]:text-stone-50 font-bold",
               }}
               selectedKey={billingCycle}
               size="lg"
@@ -144,8 +144,8 @@ export function PricingClient() {
                   Do you offer refunds?
                 </h3>
                 <p className="text-stone-600 leading-relaxed font-medium">
-                  Yes, we offer a 14-day money-back guarantee on the Pro plan. No
-                  questions asked.
+                  Yes, we offer a 14-day money-back guarantee on the Pro plan.
+                  No questions asked.
                 </p>
               </div>
               <div>
@@ -162,9 +162,9 @@ export function PricingClient() {
                   Is there a free trial for Pro?
                 </h3>
                 <p className="text-stone-600 leading-relaxed font-medium">
-                  Our Free plan is available forever with no credit card required.
-                  You can try the platform and upgrade to Pro anytime to unlock
-                  unlimited portals and all premium features.
+                  Our Free plan is available forever with no credit card
+                  required. You can try the platform and upgrade to Pro anytime
+                  to unlock unlimited portals and all premium features.
                 </p>
               </div>
               <div>
@@ -173,8 +173,8 @@ export function PricingClient() {
                 </h3>
                 <p className="text-stone-600 leading-relaxed font-medium">
                   Absolutely! You can cancel your Pro subscription at any time.
-                  You&apos;ll retain access to Pro features until the end of your
-                  billing period.
+                  You&apos;ll retain access to Pro features until the end of
+                  your billing period.
                 </p>
               </div>
             </div>
@@ -200,4 +200,3 @@ export function PricingClient() {
     </div>
   );
 }
-

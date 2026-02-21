@@ -189,7 +189,9 @@ export async function POST(request: NextRequest) {
               file.type || "application/octet-stream",
             );
 
-            storageUrl = result.webViewLink || result.id;
+            storageUrl =
+              result.webViewLink ||
+              `https://drive.google.com/file/d/${result.id}/view`;
             actualSize = result.size ? Number(result.size) : file.size;
             console.log(
               `[Portal Upload] Google Drive upload successful: ${file.name}`,

@@ -161,9 +161,11 @@ export default function AssetsPage() {
 
   // Helper functions
   const getStorageType = (storageUrl: string): string => {
+    if (!storageUrl) return "other";
     if (
       storageUrl.includes("drive.google.com") ||
-      storageUrl.includes("googleapis.com")
+      storageUrl.includes("googleapis.com") ||
+      storageUrl.includes("googledrive.com")
     )
       return "google";
     if (storageUrl.includes("dropbox.com")) return "dropbox";

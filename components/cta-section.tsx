@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Box, Twitter, Linkedin } from "lucide-react";
+import { Box } from "lucide-react";
 
 import { FadeIn } from "./animations";
 
@@ -67,16 +67,36 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#features">Features</a>
+                    <a
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="#features"
+                    >
+                      Features
+                    </a>
                   </li>
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#pricing">Pricing</a>
+                    <a
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="#pricing"
+                    >
+                      Pricing
+                    </a>
                   </li>
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/blog">Blog</a>
+                    <a
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/blog"
+                    >
+                      Blog
+                    </a>
                   </li>
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#security">Security</a>
+                    <a
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="#security"
+                    >
+                      Security
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -87,16 +107,36 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/accountants">Accountants</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/use-cases/accountants"
+                    >
+                      Accountants
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/lawyers">Lawyers</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/use-cases/lawyers"
+                    >
+                      Lawyers
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/freelancers">Freelancers</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/use-cases/freelancers"
+                    >
+                      Freelancers
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/marketing-agencies">Agencies</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/use-cases/marketing-agencies"
+                    >
+                      Agencies
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -107,10 +147,20 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/integrations/google-drive">Google Drive</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/integrations/google-drive"
+                    >
+                      Google Drive
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/integrations/dropbox">Dropbox</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/integrations/dropbox"
+                    >
+                      Dropbox
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -121,10 +171,20 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#">Privacy</a>
+                    <a
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="#"
+                    >
+                      Privacy
+                    </a>
                   </li>
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#">Terms</a>
+                    <a
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="#"
+                    >
+                      Terms
+                    </a>
                   </li>
                 </ul>
               </div>

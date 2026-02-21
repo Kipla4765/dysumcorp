@@ -174,10 +174,14 @@ export async function POST(request: NextRequest) {
 
       console.log(`[Upload Chunk] Upload complete: ${result.id}`);
 
+      const storageUrl =
+        result.webViewLink ||
+        `https://drive.google.com/file/d/${result.id}/view`;
+
       return NextResponse.json({
         success: true,
         complete: true,
-        storageUrl: result.webViewLink || result.id,
+        storageUrl,
         storageFileId: result.id,
         size: result.size ? Number(result.size) : fileSize,
       });
