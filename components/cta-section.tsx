@@ -30,7 +30,7 @@ export default function CTASection() {
                 </Button>
                 <Link
                   className="w-full sm:w-auto px-12 py-6 bg-white/5 backdrop-blur border border-white/20 rounded-xl font-bold text-xl hover:bg-white/10 transition-colors text-stone-100"
-                  href="#pricing"
+                  href="/pricing"
                 >
                   View pricing
                 </Link>
@@ -67,36 +67,36 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <a
+                    <Link
                       className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#features"
+                      href="/features"
                     >
                       Features
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#pricing"
+                      href="/pricing"
                     >
                       Pricing
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
                       href="/blog"
                     >
                       Blog
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#security"
+                      href="/security"
                     >
                       Security
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -171,20 +171,36 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <a
+                    <Link
                       className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#"
+                      href="/features"
                     >
-                      Privacy
-                    </a>
+                      Features
+                    </Link>
                   </li>
                   <li>
-                    <a
+                    <Link
                       className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
-                      href="#"
+                      href="/pricing"
                     >
-                      Terms
-                    </a>
+                      Pricing
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/blog"
+                    >
+                      Blog
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/security"
+                    >
+                      Security
+                    </Link>
                   </li>
                 </ul>
               </div>
