@@ -152,25 +152,23 @@ export async function POST(request: NextRequest) {
     );
     const userId = portal.userId;
 
-    // Get cloud storage token (Google Drive or Dropbox)
-    console.log("[Portal Upload] Checking for Google Drive connection...");
-    let accessToken = await getValidToken(userId, "google");
-    let provider: "google" | "dropbox" = "google";
+    // Get cloud storage token based on portal's storageProvider setting
+    const portalProvider =
+      portal.storageProvider === "dropbox" ? "dropbox" : "google";
+    console.log(`[Portal Upload] Portal storage provider: ${portalProvider}`);
 
-    if (!accessToken) {
-      console.log("[Portal Upload] No Google Drive, checking Dropbox...");
-      accessToken = await getValidToken(userId, "dropbox");
-      provider = "dropbox";
-    }
+    let accessToken = await getValidToken(userId, portalProvider);
+    let provider: "google" | "dropbox" = portalProvider;
 
     // Cloud storage is required - no local fallback
     if (!accessToken) {
-      console.log("[Portal Upload] Error: No cloud storage connected");
+      console.log(
+        `[Portal Upload] Error: No ${portalProvider} storage connected`,
+      );
 
       return NextResponse.json(
         {
-          error:
-            "Cloud storage not connected. Please connect Google Drive or Dropbox in Settings to upload files.",
+          error: `Cloud storage not connected. Please connect ${portalProvider === "google" ? "Google Drive" : "Dropbox"} in Settings to upload files.`,
         },
         { status: 400 },
       );

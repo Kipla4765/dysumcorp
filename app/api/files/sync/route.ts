@@ -38,6 +38,11 @@ export async function POST(request: Request) {
           name: true,
           storageUrl: true,
           storageFileId: true,
+          portal: {
+            select: {
+              storageProvider: true,
+            },
+          },
         },
       });
     } else {
@@ -53,6 +58,11 @@ export async function POST(request: Request) {
           name: true,
           storageUrl: true,
           storageFileId: true,
+          portal: {
+            select: {
+              storageProvider: true,
+            },
+          },
         },
       });
     }
@@ -66,15 +76,18 @@ export async function POST(request: Request) {
     // Check each file in cloud storage
     for (const file of files) {
       try {
-        const isGoogleDrive =
-          file.storageUrl.includes("drive.google.com") ||
+        // Determine provider from portal's storageProvider, fallback to URL detection
+        const provider =
+          file.portal?.storageProvider ||
+          (file.storageUrl.includes("drive.google.com") ||
           file.storageUrl.includes("docs.google.com") ||
-          file.storageUrl.includes("googledrive.com");
-        const isDropbox = file.storageUrl.includes("dropbox.com");
+          file.storageUrl.includes("googledrive.com")
+            ? "google"
+            : "dropbox");
 
         let fileExistsInCloud = true;
 
-        if (isGoogleDrive) {
+        if (provider === "google") {
           const accessToken = await getValidToken(session.user.id, "google");
 
           if (accessToken) {
@@ -107,7 +120,7 @@ export async function POST(request: Request) {
               }
             }
           }
-        } else if (isDropbox) {
+        } else if (provider === "dropbox") {
           const accessToken = await getValidToken(session.user.id, "dropbox");
 
           if (accessToken) {

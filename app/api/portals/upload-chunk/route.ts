@@ -78,13 +78,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Get access token based on portal's storage provider
-    let accessToken = await getValidToken(portal.userId, "google");
-    let provider: "google" | "dropbox" = "google";
-
-    if (!accessToken) {
-      accessToken = await getValidToken(portal.userId, "dropbox");
-      provider = "dropbox";
-    }
+    const portalProvider =
+      portal.storageProvider === "dropbox" ? "dropbox" : "google";
+    let accessToken = await getValidToken(portal.userId, portalProvider);
+    let provider: "google" | "dropbox" = portalProvider;
 
     if (!accessToken) {
       return NextResponse.json(

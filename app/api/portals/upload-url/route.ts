@@ -83,7 +83,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the portal owner's storage token
-    const storageProvider = provider || portal.storageProvider || "google";
+    const storageProvider =
+      provider || (portal.storageProvider === "dropbox" ? "dropbox" : "google");
     const accessToken = await getValidToken(portal.userId, storageProvider);
 
     if (!accessToken) {
@@ -175,7 +176,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      provider: provider || "google",
+      provider: storageProvider,
       ...uploadMetadata,
       portalId,
       fileName,
