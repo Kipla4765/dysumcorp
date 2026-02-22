@@ -30,7 +30,7 @@ export default function CTASection() {
                 </Button>
                 <Link
                   className="w-full sm:w-auto px-12 py-6 bg-white/5 backdrop-blur border border-white/20 rounded-xl font-bold text-xl hover:bg-white/10 transition-colors text-stone-100"
-                  href="#pricing"
+                  href="/pricing"
                 >
                   View pricing
                 </Link>
@@ -67,16 +67,36 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#features">Features</a>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/features"
+                    >
+                      Features
+                    </Link>
                   </li>
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#pricing">Pricing</a>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/pricing"
+                    >
+                      Pricing
+                    </Link>
                   </li>
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/blog">Blog</a>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/blog"
+                    >
+                      Blog
+                    </Link>
                   </li>
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#security">Security</a>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/security"
+                    >
+                      Security
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -87,16 +107,36 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/accountants">Accountants</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/use-cases/accountants"
+                    >
+                      Accountants
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/lawyers">Lawyers</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/use-cases/lawyers"
+                    >
+                      Lawyers
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/freelancers">Freelancers</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/use-cases/freelancers"
+                    >
+                      Freelancers
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/use-cases/marketing-agencies">Agencies</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/use-cases/marketing-agencies"
+                    >
+                      Agencies
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -107,10 +147,20 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/integrations/google-drive">Google Drive</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/integrations/google-drive"
+                    >
+                      Google Drive
+                    </Link>
                   </li>
                   <li>
-                    <Link className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="/integrations/dropbox">Dropbox</Link>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/integrations/dropbox"
+                    >
+                      Dropbox
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -121,10 +171,20 @@ export default function CTASection() {
                 </h4>
                 <ul className="space-y-3">
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#">Privacy</a>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/privacy"
+                    >
+                      Privacy
+                    </Link>
                   </li>
                   <li>
-                    <a className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors" href="#">Terms</a>
+                    <Link
+                      className="text-sm text-stone-600 hover:text-[#1c1917] transition-colors"
+                      href="/terms"
+                    >
+                      Terms
+                    </Link>
                   </li>
                 </ul>
               </div>
