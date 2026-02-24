@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 
 import { getFileIcon, getFileIconColor } from "@/lib/file-icons";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useSession } from "@/lib/auth-client";
 import { uploadFile } from "@/lib/upload-manager";
 import { useToast } from "@/lib/toast";
@@ -498,44 +499,12 @@ export default function PortalsPage() {
                   <span className="hidden sm:inline">Copy Link</span>
                   <span className="sm:hidden">Copy</span>
                 </Button>
-                <Button
-                  className="rounded-xl font-medium text-xs h-8 px-2 sm:px-3"
-                  size="sm"
-                  title={
-                    portal.isActive ? "Deactivate Portal" : "Activate Portal"
-                  }
-                  variant="outline"
-                  onClick={() => handleToggleActive(portal.id, portal.isActive)}
-                >
-                  {portal.isActive ? (
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="15" x2="9" y1="9" y2="15" />
-                      <line x1="9" x2="15" y1="9" y2="15" />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <polyline points="9 11 12 14 22 4" />
-                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                    </svg>
-                  )}
-                </Button>
+                <Switch
+                  checked={portal.isActive}
+                  onCheckedChange={(checked): void => {
+                    handleToggleActive(portal.id, Boolean(checked));
+                  }}
+                />
                 <Button
                   className="rounded-xl font-medium text-xs h-8 px-2 sm:px-3"
                   size="sm"

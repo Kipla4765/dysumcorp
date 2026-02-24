@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import { ExternalLink, FileText, X } from "lucide-react";
 import { Download, Calendar, Trash2, FolderOpen } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { getFileIcon, getFileIconColor } from "@/lib/file-icons";
 import { useSession } from "@/lib/auth-client";
 import { useToast } from "@/lib/toast";
@@ -453,7 +455,7 @@ export default function DashboardPage() {
               {activePortalsList.map((portal) => (
                 <div
                   key={portal.id}
-                  className="bg-bg-card border border-border rounded-[14px] p-4 sm:p-5 lg:p-6 hover:shadow-md transition-shadow"
+                  className="bg-bg-card rounded-[12px] p-4 sm:p-6 border border-border hover:shadow-md transition-shadow"
                 >
                   {/* Portal Name - Clickable to open files modal */}
                   <div
@@ -462,19 +464,25 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-text-white text-sm sm:text-base truncate group-hover:text-primary transition-colors">
+                        <h3 className="font-semibold text-foreground truncate mb-1 group-hover:text-primary transition-colors text-sm sm:text-base">
                           {portal.name}
                         </h3>
-                        <p className="text-[10px] sm:text-xs text-text-muted truncate mt-0.5 sm:mt-1">
+                        <p className="text-xs text-muted-foreground truncate">
                           /{portal.slug}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
-                        <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md bg-accent-green/10 text-accent-green">
-                          Active
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2 flex-shrink-0">
+                        <span
+                          className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md ${
+                            portal.isActive
+                              ? "bg-green-50 text-green-600 dark:bg-green-950/50"
+                              : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                          }`}
+                        >
+                          {portal.isActive ? "Active" : "Inactive"}
                         </span>
                         {portal.whiteLabeled && (
-                          <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md bg-purple-50 text-purple-600 dark:bg-purple-950/50">
+                          <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md bg-purple-50 text-purple-600 dark:bg-purple-950/50 hidden sm:inline">
                             Premium
                           </span>
                         )}
@@ -485,29 +493,28 @@ export default function DashboardPage() {
                   {/* Stats */}
                   <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm mb-3 sm:mb-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-text-muted">Files</span>
+                      <span className="text-muted-foreground">Files</span>
                       <span className="font-medium flex items-center gap-1">
-                        <svg
-                          className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                          <polyline points="13 2 13 9 20 9" />
-                        </svg>
+                        <FileText className="w-3.5 h-3.5" />
                         {portal._count?.files || 0}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">
+                        Last Updated
+                      </span>
+                      <span className="font-medium text-xs">
+                        {new Date(portal.updatedAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-1.5 sm:gap-2">
-                    <button
-                      className="flex-1 rounded-xl font-medium text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 border border-border hover:bg-muted transition-colors"
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    <Button
+                      className="flex-1 sm:flex-initial rounded-xl font-medium text-xs h-8 min-w-0 sm:min-w-[80px]"
+                      size="sm"
+                      variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
                         const url = `${window.location.origin}/portal/${portal.slug}`;
@@ -519,68 +526,50 @@ export default function DashboardPage() {
                         );
                       }}
                     >
-                      Copy Link
-                    </button>
-                    <button
-                      className="rounded-xl font-medium text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 border border-border hover:bg-muted transition-colors"
-                      title={
-                        portal.isActive
-                          ? "Deactivate Portal"
-                          : "Activate Portal"
-                      }
-                      onClick={(e) =>
-                        handleToggleActive(portal.id, portal.isActive, e)
-                      }
-                    >
-                      {portal.isActive ? (
-                        <svg
-                          className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <line x1="15" x2="9" y1="9" y2="15" />
-                          <line x1="9" x2="15" y1="9" y2="15" />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <polyline points="9 11 12 14 22 4" />
-                          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                        </svg>
-                      )}
-                    </button>
-                    <button
-                      className="rounded-xl font-medium text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 border border-border hover:bg-muted transition-colors"
+                      <span className="hidden sm:inline">Copy Link</span>
+                      <span className="sm:hidden">Copy</span>
+                    </Button>
+                    <Switch
+                      checked={portal.isActive}
+                      onCheckedChange={(checked) => {
+                        const mockEvent = {
+                          stopPropagation: () => {},
+                        } as unknown as React.MouseEvent;
+
+                        handleToggleActive(
+                          portal.id,
+                          Boolean(checked),
+                          mockEvent,
+                        );
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    />
+                    <Button
+                      className="rounded-xl font-medium text-xs h-8 px-2 sm:px-3"
+                      size="sm"
                       title="View Portal"
+                      variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(`/portal/${portal.slug}`, "_blank");
                       }}
                     >
-                      <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    </button>
-                    <button
-                      className="rounded-xl font-medium text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 border border-border hover:bg-muted transition-colors"
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      className="rounded-xl font-medium text-xs h-8 px-2 sm:px-3"
+                      size="sm"
                       title="Edit Portal"
+                      variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push(`/dashboard/portals/${portal.id}/edit`);
                       }}
                     >
                       <svg
-                        className="w-3 h-3 sm:w-3.5 sm:h-3.5"
+                        className="w-3.5 h-3.5"
                         fill="none"
                         stroke="currentColor"
                         strokeLinecap="round"
@@ -591,7 +580,7 @@ export default function DashboardPage() {
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                       </svg>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
