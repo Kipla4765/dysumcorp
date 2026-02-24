@@ -315,7 +315,7 @@ export default function DashboardPage() {
         <div className="bg-bg-card border border-border rounded-[14px] p-4 sm:p-5 lg:p-[22px_24px_24px]">
           <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 mb-3 sm:mb-4 lg:mb-[18px]">
             <svg
-              className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 text-accent-blue"
+              className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 text-blue-500"
               fill="none"
               stroke="currentColor"
               strokeLinecap="round"
@@ -338,7 +338,7 @@ export default function DashboardPage() {
         <div className="bg-bg-card border border-border rounded-[14px] p-4 sm:p-5 lg:p-[22px_24px_24px]">
           <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 mb-3 sm:mb-4 lg:mb-[18px]">
             <svg
-              className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 text-accent-green"
+              className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 text-emerald-500"
               fill="none"
               stroke="currentColor"
               strokeLinecap="round"
@@ -361,7 +361,7 @@ export default function DashboardPage() {
         <div className="bg-bg-card border border-border rounded-[14px] p-4 sm:p-5 lg:p-[22px_24px_24px]">
           <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 mb-3 sm:mb-4 lg:mb-[18px]">
             <svg
-              className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 text-accent-purple"
+              className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 text-purple-600"
               fill="none"
               stroke="currentColor"
               strokeLinecap="round"
@@ -385,7 +385,7 @@ export default function DashboardPage() {
         <div className="bg-bg-card border border-border rounded-[14px] p-4 sm:p-5 lg:p-[22px_24px_24px]">
           <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 mb-3 sm:mb-4 lg:mb-[18px]">
             <svg
-              className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 text-accent-yellow"
+              className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 text-amber-500"
               fill="none"
               stroke="currentColor"
               strokeLinecap="round"
@@ -612,7 +612,7 @@ export default function DashboardPage() {
                 href="/dashboard/portals/create"
               >
                 <svg
-                  className="w-5 h-5 sm:w-[26px] sm:h-[26px] text-accent-green"
+                  className="w-5 h-5 sm:w-[26px] sm:h-[26px] text-emerald-500"
                   fill="none"
                   stroke="currentColor"
                   strokeLinecap="round"
@@ -633,7 +633,7 @@ export default function DashboardPage() {
                 href="/dashboard/portals"
               >
                 <svg
-                  className="w-5 h-5 sm:w-[26px] sm:h-[26px] text-accent-blue"
+                  className="w-5 h-5 sm:w-[26px] sm:h-[26px] text-blue-500"
                   fill="none"
                   stroke="currentColor"
                   strokeLinecap="round"
@@ -653,7 +653,7 @@ export default function DashboardPage() {
                 href="/dashboard/storage"
               >
                 <svg
-                  className="w-5 h-5 sm:w-[26px] sm:h-[26px] text-accent-purple"
+                  className="w-5 h-5 sm:w-[26px] sm:h-[26px] text-violet-500"
                   fill="none"
                   stroke="currentColor"
                   strokeLinecap="round"
@@ -673,7 +673,7 @@ export default function DashboardPage() {
                 href="/dashboard/settings"
               >
                 <svg
-                  className="w-5 h-5 sm:w-[26px] sm:h-[26px] text-accent-yellow"
+                  className="w-5 h-5 sm:w-[26px] sm:h-[26px] text-orange-500"
                   fill="none"
                   stroke="currentColor"
                   strokeLinecap="round"

@@ -13,6 +13,51 @@ const posts = [
     readTime: "5 min read",
     category: "Best Practices",
   },
+  {
+    slug: "secure-file-transfer-best-practices",
+    title: "Secure File Transfer: Best Practices for 2025",
+    excerpt:
+      "Protect your sensitive client data with these essential secure file transfer protocols and encryption standards.",
+    date: "2025-02-10",
+    readTime: "7 min read",
+    category: "Security",
+  },
+  {
+    slug: "automate-client-onboarding",
+    title: "How to Automate Your Client Onboarding Workflow",
+    excerpt:
+      "Save hours every week by automating the document and file collection process for new clients.",
+    date: "2025-02-07",
+    readTime: "6 min read",
+    category: "Automation",
+  },
+  {
+    slug: "dropbox-google-drive-integration",
+    title: "Dropbox vs Google Drive: Which One for Your Business?",
+    excerpt:
+      "Compare the top cloud storage integrations to find the perfect fit for your file collection workflow.",
+    date: "2025-02-03",
+    readTime: "5 min read",
+    category: "Integrations",
+  },
+  {
+    slug: "file-organization-tips",
+    title: "10 File Organization Tips for Small Businesses",
+    excerpt:
+      "Keep your client files organized and findable with these proven file naming and folder structure strategies.",
+    date: "2025-01-28",
+    readTime: "4 min read",
+    category: "Productivity",
+  },
+  {
+    slug: "client-portal-benefits",
+    title: "Why Your Business Needs a Client Portal",
+    excerpt:
+      "Discover how dedicated client portals can improve your professional image and streamline operations.",
+    date: "2025-01-20",
+    readTime: "5 min read",
+    category: "Best Practices",
+  },
 ];
 
 import { LandingNavbar } from "@/components/landing-navbar";

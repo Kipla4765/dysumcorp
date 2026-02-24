@@ -108,8 +108,8 @@ export function PrivacyClient() {
                   Start Free Account <ArrowRight className="w-5 h-5" />
                 </Button>
                 <Link
-                  href="/security"
                   className="px-10 py-5 border border-stone-300 text-stone-700 rounded-xl font-bold text-lg hover:bg-stone-100 transition-colors inline-flex items-center gap-2"
+                  href="/security"
                 >
                   Security Details
                 </Link>
@@ -234,8 +234,8 @@ export function PrivacyClient() {
                   Get Started Free
                 </Button>
                 <Link
-                  href="/pricing"
                   className="px-10 py-5 border border-stone-300 text-stone-700 rounded-xl font-bold text-lg hover:bg-stone-100 transition-colors inline-flex items-center gap-2"
+                  href="/pricing"
                 >
                   View Pricing <ArrowRight className="w-5 h-5" />
                 </Link>

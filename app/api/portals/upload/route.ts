@@ -155,6 +155,7 @@ export async function POST(request: NextRequest) {
     // Get cloud storage token based on portal's storageProvider setting
     const portalProvider =
       portal.storageProvider === "dropbox" ? "dropbox" : "google";
+
     console.log(`[Portal Upload] Portal storage provider: ${portalProvider}`);
 
     let accessToken = await getValidToken(userId, portalProvider);

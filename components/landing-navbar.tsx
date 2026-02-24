@@ -71,11 +71,11 @@ export function LandingNavbar() {
             <div className="flex flex-col h-full">
               <div className="flex items-center gap-2 mb-8">
                 <Image
-                  src="/logo.png"
                   alt="dysumcorp logo"
-                  width={32}
-                  height={32}
                   className="w-8 h-8 object-contain"
+                  height={32}
+                  src="/logo.png"
+                  width={32}
                 />
                 <span className="serif-font font-bold text-xl tracking-tight text-[#1c1917]">
                   dysumcorp
