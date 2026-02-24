@@ -154,6 +154,8 @@ const StorageSection: React.FC<StorageSectionProps> = ({
   const [folders, setFolders] = useState<StorageFolder[]>([]);
   const [isRunningHealthCheck, setIsRunningHealthCheck] = useState(false);
   const [healthCheckResults, setHealthCheckResults] = useState<any>(null);
+  const [hasUserSelectedFolder, setHasUserSelectedFolder] = useState(false);
+  const [folderError, setFolderError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAccounts();
@@ -164,6 +166,7 @@ const StorageSection: React.FC<StorageSectionProps> = ({
     if (
       !loadingAccounts &&
       accounts.length > 0 &&
+      !hasUserSelectedFolder &&
       (!formData.storageProvider ||
         (!loadingFolders && folders.length === 0 && folderPath.length === 0))
     ) {
@@ -182,6 +185,7 @@ const StorageSection: React.FC<StorageSectionProps> = ({
     formData.storageProvider,
     folders.length,
     folderPath.length,
+    hasUserSelectedFolder,
   ]);
 
   async function fetchAccounts() {
@@ -210,6 +214,7 @@ const StorageSection: React.FC<StorageSectionProps> = ({
   }
 
   async function selectStorageProvider(provider: "google_drive" | "dropbox") {
+    setHasUserSelectedFolder(true);
     updateFormData("storageProvider", provider);
     updateFormData("storageFolderId", "");
     updateFormData("storageFolderPath", "");
@@ -231,6 +236,8 @@ const StorageSection: React.FC<StorageSectionProps> = ({
           updateFormData("storageFolderPath", rootFolder.path);
           await fetchFolders(provider, rootFolder.id);
         }
+      } else if (rootRes.status === 403 || rootRes.status === 401) {
+        await fetchAccounts();
       }
     } catch (error) {
       console.error("Error initializing storage:", error);
@@ -264,6 +271,7 @@ const StorageSection: React.FC<StorageSectionProps> = ({
   async function handleCreateFolder() {
     if (!newFolderName.trim() || !formData.storageProvider) return;
 
+    setFolderError(null);
     setLoadingFolders(true);
     try {
       const parentId =
@@ -287,9 +295,22 @@ const StorageSection: React.FC<StorageSectionProps> = ({
         setIsCreatingFolder(false);
         await fetchFolders(formData.storageProvider, parentId);
         navigateToFolder(newFolder);
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        const errorMessage = errorData.error || "Failed to create folder";
+
+        if (errorMessage.includes("token expired") || res.status === 403) {
+          setFolderError(
+            "Storage connection expired. Please refresh the page and try again.",
+          );
+          await fetchAccounts();
+        } else {
+          setFolderError(errorMessage);
+        }
       }
     } catch (error) {
       console.error("Error creating folder:", error);
+      setFolderError("An unexpected error occurred");
     } finally {
       setLoadingFolders(false);
     }
@@ -605,6 +626,14 @@ const StorageSection: React.FC<StorageSectionProps> = ({
                 </button>
               </div>
             ))}
+            {formData.useClientFolders && (
+              <>
+                <ChevronRight className="w-3 h-3 text-muted" />
+                <span className="px-2 py-1 rounded-lg text-[11px] font-bold bg-primary/20 text-primary">
+                  [client name]
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -624,7 +653,10 @@ const StorageSection: React.FC<StorageSectionProps> = ({
                     </h4>
                     <button
                       className="text-muted-foreground hover:text-foreground"
-                      onClick={() => setIsCreatingFolder(false)}
+                      onClick={() => {
+                        setIsCreatingFolder(false);
+                        setFolderError(null);
+                      }}
                     >
                       <ArrowLeft className="w-3.5 h-3.5 rotate-90" />
                     </button>
@@ -648,6 +680,12 @@ const StorageSection: React.FC<StorageSectionProps> = ({
                       Create
                     </button>
                   </div>
+                  {folderError && (
+                    <div className="flex items-center gap-2 text-xs text-red-500 mt-1">
+                      <AlertCircle className="w-3 h-3" />
+                      <span>{folderError}</span>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -710,26 +748,6 @@ const StorageSection: React.FC<StorageSectionProps> = ({
               </span>
             </div>
           </label>
-        </div>
-
-        {/* Folder Path Display */}
-        <div className="mt-4 p-3 bg-muted/50 rounded-xl border border-border">
-          <div className="flex items-center gap-2">
-            <FolderOpen className="w-4 h-4 text-primary" />
-            <span className="text-xs font-semibold text-foreground">
-              Default Upload Path:
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1 font-mono">
-            {formData.storageFolderId && formData.storageFolderPath
-              ? formData.storageFolderPath
-              : portal?.name
-                ? `dysumcorp/${portal.name}`
-                : "dysumcorp/[portal name]"}
-            {formData.useClientFolders && (
-              <span className="text-primary">/[client name]</span>
-            )}
-          </p>
         </div>
       </div>
 

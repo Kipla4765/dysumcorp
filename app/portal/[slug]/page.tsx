@@ -129,6 +129,103 @@ export default function PublicPortalPage() {
     }
   };
 
+  const isFileTypeAllowed = (file: File, allowedTypes: string[]): boolean => {
+    const fileType = file.type.toLowerCase();
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.split(".").pop() || "";
+
+    // Common text-based extensions that browsers might not recognize properly
+    const textExtensions = [
+      "txt",
+      "md",
+      "markdown",
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "json",
+      "html",
+      "htm",
+      "css",
+      "scss",
+      "sass",
+      "less",
+      "xml",
+      "yaml",
+      "yml",
+      "csv",
+      "log",
+      "py",
+      "rb",
+      "php",
+      "java",
+      "c",
+      "cpp",
+      "h",
+      "hpp",
+      "cs",
+      "go",
+      "rs",
+      "swift",
+      "kt",
+      "sql",
+      "sh",
+      "bash",
+      "zsh",
+      "ps1",
+      "bat",
+      "cmd",
+      "ini",
+      "conf",
+      "cfg",
+      "toml",
+      "env",
+      "gitignore",
+      "dockerfile",
+    ];
+
+    return allowedTypes.some((allowedType) => {
+      const allowed = allowedType.toLowerCase();
+
+      // Handle wildcard types like "image/*", "text/*", "video/*", "audio/*"
+      if (allowed.endsWith("/*")) {
+        const baseType = allowed.replace("/*", "");
+
+        // For text/*, also check common text extensions
+        if (baseType === "text") {
+          return (
+            textExtensions.includes(fileExtension) ||
+            fileType.startsWith("text")
+          );
+        }
+
+        return fileType.startsWith(baseType);
+      }
+
+      // Handle exact MIME types
+      if (fileType === allowed) {
+        return true;
+      }
+
+      // Handle extensions (with or without dot)
+      if (allowed.startsWith(".")) {
+        return fileName.endsWith(allowed);
+      }
+
+      // Check if the allowed type matches the extension
+      if (fileExtension === allowed) {
+        return true;
+      }
+
+      // Check if it's a comma-separated list of MIME types
+      if (allowed.includes(",")) {
+        return allowed.split(",").some((type) => type.trim() === fileType);
+      }
+
+      return false;
+    });
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && portal) {
       const selectedFiles = Array.from(e.target.files);
@@ -139,25 +236,9 @@ export default function PublicPortalPage() {
       let validFiles = selectedFiles;
 
       if (portalAllowedTypes.length > 0) {
-        validFiles = selectedFiles.filter((file) => {
-          const fileType = file.type.toLowerCase();
-          const fileName = file.name.toLowerCase();
-
-          return portalAllowedTypes.some((allowedType) => {
-            // Handle wildcard types like "image/*"
-            if (allowedType.endsWith("/*")) {
-              const baseType = allowedType.replace("/*", "");
-
-              return fileType.startsWith(baseType);
-            }
-
-            // Handle exact MIME types or extensions
-            return (
-              fileType === allowedType.toLowerCase() ||
-              fileName.endsWith(allowedType.toLowerCase().replace(".", ""))
-            );
-          });
-        });
+        validFiles = selectedFiles.filter((file) =>
+          isFileTypeAllowed(file, portalAllowedTypes),
+        );
 
         if (validFiles.length < selectedFiles.length) {
           setErrorMessage(

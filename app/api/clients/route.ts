@@ -26,9 +26,7 @@ export async function GET(request: Request) {
         portal: {
           userId: session.user.id,
         },
-        uploaderEmail: {
-          not: null,
-        },
+        OR: [{ uploaderEmail: { not: null } }, { uploaderName: { not: null } }],
       },
       select: {
         uploaderName: true,
@@ -47,7 +45,7 @@ export async function GET(request: Request) {
       },
     });
 
-    // Group files by client email
+    // Group files by client email or name
     const clientsMap = new Map<
       string,
       {
@@ -61,8 +59,9 @@ export async function GET(request: Request) {
     >();
 
     files.forEach((file) => {
-      const email = file.uploaderEmail!;
-      const existing = clientsMap.get(email);
+      // Use email as primary identifier, fall back to name
+      const identifier = file.uploaderEmail || file.uploaderName || "Unknown";
+      const existing = clientsMap.get(identifier);
 
       if (existing) {
         existing.totalFiles += 1;
@@ -71,10 +70,14 @@ export async function GET(request: Request) {
         if (file.uploadedAt > existing.lastUpload) {
           existing.lastUpload = file.uploadedAt;
         }
+        // Update email if we get one later
+        if (file.uploaderEmail && !existing.email) {
+          existing.email = file.uploaderEmail;
+        }
       } else {
-        clientsMap.set(email, {
-          name: file.uploaderName || "Unknown",
-          email: email,
+        clientsMap.set(identifier, {
+          name: file.uploaderName || file.uploaderEmail || "Unknown",
+          email: file.uploaderEmail || "",
           totalFiles: 1,
           totalSize: file.size,
           lastUpload: file.uploadedAt,

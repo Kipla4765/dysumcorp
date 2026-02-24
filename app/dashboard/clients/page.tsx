@@ -173,13 +173,18 @@ export default function ClientsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        // Filter files by client email using uploaderEmail field
-        const filtered = data.files.filter(
-          (f: FileItem) =>
-            f.uploaderEmail &&
-            client.email &&
-            f.uploaderEmail.toLowerCase() === client.email.toLowerCase(),
-        );
+        // Filter files by client email or name
+        const filtered = data.files.filter((f: FileItem) => {
+          // Match by email if available
+          if (client.email && f.uploaderEmail) {
+            return f.uploaderEmail.toLowerCase() === client.email.toLowerCase();
+          }
+          // Match by name if email not available
+          if (client.name && f.uploaderName) {
+            return f.uploaderName.toLowerCase() === client.name.toLowerCase();
+          }
+          return false;
+        });
 
         setClientFiles(filtered);
       }
