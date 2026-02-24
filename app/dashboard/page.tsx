@@ -531,6 +531,11 @@ export default function DashboardPage() {
                     </Button>
                     <Switch
                       checked={portal.isActive}
+                      title={
+                        portal.isActive
+                          ? "Deactivate Portal"
+                          : "Activate Portal"
+                      }
                       onCheckedChange={(checked) => {
                         const mockEvent = {
                           stopPropagation: () => {},

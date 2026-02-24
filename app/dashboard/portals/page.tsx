@@ -501,6 +501,9 @@ export default function PortalsPage() {
                 </Button>
                 <Switch
                   checked={portal.isActive}
+                  title={
+                    portal.isActive ? "Deactivate Portal" : "Activate Portal"
+                  }
                   onCheckedChange={(checked): void => {
                     handleToggleActive(portal.id, Boolean(checked));
                   }}

@@ -23,6 +23,7 @@ import {
 
 import { getFileIcon, getFileIconColor } from "@/lib/file-icons";
 import { useToast } from "@/lib/toast";
+import { useSession } from "@/lib/auth-client";
 
 interface Client {
   name: string;
@@ -63,6 +64,26 @@ export default function ClientsPage() {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
   const { showToast } = useToast();
+  const { data: session, status } = useSession();
+
+  // Show loading while checking auth
+  if (status === "loading") {
+    return (
+      <div className="w-full overflow-hidden">
+        <div className="mb-6 sm:mb-8 lg:mb-10">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            Client Directory
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-lg">
+            Loading...
+          </p>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-muted border-t-foreground rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   const tabs = [
     {
@@ -86,8 +107,10 @@ export default function ClientsPage() {
   ];
 
   useEffect(() => {
-    fetchClients();
-  }, []);
+    if (session) {
+      fetchClients();
+    }
+  }, [session]);
 
   const fetchClients = async () => {
     try {
@@ -96,10 +119,16 @@ export default function ClientsPage() {
       if (response.ok) {
         const data = await response.json();
 
-        setClients(data.clients);
+        setClients(data.clients || []);
+      } else {
+        const errorData = await response.json();
+
+        console.error("Failed to fetch clients:", errorData);
+        showToast(errorData.error || "Failed to fetch clients", "error");
       }
     } catch (error) {
       console.error("Failed to fetch clients:", error);
+      showToast("Failed to fetch clients", "error");
     } finally {
       setLoading(false);
     }
@@ -258,18 +287,23 @@ export default function ClientsPage() {
       c.email?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const totalPortals = new Set(clients.flatMap((c) => c.portals)).size;
+  const totalPortals = new Set(
+    clients.flatMap((c) => (Array.isArray(c.portals) ? c.portals : [])),
+  ).size;
 
   if (loading) {
     return (
-      <div>
-        <div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
+      <div className="w-full overflow-hidden">
+        <div className="mb-6 sm:mb-8 lg:mb-10">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
             Client Directory
           </h1>
-          <p className="text-muted-foreground mt-1 text-lg">
+          <p className="text-muted-foreground mt-1 text-sm sm:text-lg">
             Loading clients...
           </p>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-muted border-t-foreground rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -437,15 +471,17 @@ export default function ClientsPage() {
                       ) : (
                         <div className="text-center py-12 sm:py-20 px-4 sm:px-6">
                           <div className="p-3 sm:p-4 bg-muted rounded-full w-fit mx-auto mb-4">
-                            <Users className="w-6 sm:w-8 h-6 sm:h-8 text-muted-foreground" />
+                            <Users className="w-6 sm:w-8 h-6 sm:w-8 text-muted-foreground" />
                           </div>
                           <h4 className="text-foreground font-semibold mb-1">
-                            No clients found
+                            {searchQuery
+                              ? "No clients found"
+                              : "No clients yet"}
                           </h4>
                           <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-                            We couldn't find any clients matching your search.
-                            Try a different term or invite new clients to
-                            upload.
+                            {searchQuery
+                              ? "We couldn't find any clients matching your search. Try a different term."
+                              : "Clients will appear here when they upload files to your portals. Make sure your portals require client email."}
                           </p>
                         </div>
                       )}
