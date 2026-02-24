@@ -38,33 +38,35 @@ export function PricingCard({
       )}
 
       <Card
-        className={`bg-white border rounded-[2rem] p-4 ${plan.popular ? "border-2 border-[#1c1917] premium-shadow" : "border-stone-200"}`}
+        className={`bg-card border rounded-xl ${
+          plan.popular ? "border-primary" : "border-border"
+        }`}
         shadow="none"
       >
-        <CardHeader className="flex flex-col items-start gap-2 pb-6 border-b border-stone-100 bg-transparent">
-          <h3 className="text-2xl font-bold serif-font text-[#1c1917]">
-            {plan.name}
-          </h3>
-          <p className="text-sm text-stone-600 font-medium">
+        <CardHeader className="flex flex-col items-start gap-2 pb-6 border-b border-border bg-transparent">
+          <h3 className="text-2xl font-bold text-foreground">{plan.name}</h3>
+          <p className="text-sm text-muted-foreground font-medium">
             {plan.description}
           </p>
 
           <div className="mt-6">
             <div className="flex items-baseline gap-1">
-              <span className="text-5xl font-bold text-[#1c1917] tracking-tight">
+              <span className="text-5xl font-bold text-foreground tracking-tight">
                 {formatPrice(price)}
               </span>
               {!isFree && (
-                <span className="text-stone-500 font-medium">/month</span>
+                <span className="text-muted-foreground font-medium">
+                  /month
+                </span>
               )}
             </div>
             {billingCycle === "annual" && !isFree && (
               <div className="mt-2">
-                <p className="text-xs text-stone-500 font-bold uppercase tracking-wider">
+                <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
                   {formatPrice(totalPrice)} billed annually
                 </p>
                 {savings > 0 && (
-                  <p className="text-xs text-[#1c1917] font-bold mt-1 bg-stone-100 inline-block px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  <p className="text-xs text-primary font-bold mt-1 bg-primary/10 inline-block px-2 py-0.5 rounded-full uppercase tracking-wider">
                     Save {formatPrice(savings)}/year
                   </p>
                 )}
@@ -77,8 +79,8 @@ export function PricingCard({
           <ul className="space-y-4 mb-10">
             {plan.features.map((feature, index) => (
               <li key={index} className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-[#1c1917] flex-shrink-0 mt-0.5" />
-                <span className="text-sm font-medium text-stone-700">
+                <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <span className="text-sm font-medium text-foreground/80">
                   {feature}
                 </span>
               </li>
@@ -88,9 +90,10 @@ export function PricingCard({
           <Button
             className={`w-full py-6 rounded-xl font-bold text-sm transition-all ${
               plan.popular
-                ? "bg-[#1c1917] text-stone-50 hover:bg-stone-800"
-                : "bg-white border border-stone-200 text-[#1c1917] hover:bg-stone-50"
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             }`}
+            color={plan.popular ? "primary" : "secondary"}
             isDisabled={isCurrentPlan}
             onClick={() => onSubscribe?.(plan.id, billingCycle === "annual")}
           >

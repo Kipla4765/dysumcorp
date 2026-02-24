@@ -56,13 +56,11 @@ export function SubscriptionStatus() {
   }
 
   // Determine subscription status
-  // Priority: 1. User table (session), 2. Creem subscription check
   const hasPaidPlan = userPlan !== "free";
   const isUserActive = userStatus === "active";
   const hasCreemAccess =
     creemStatus?.hasAccessGranted ?? creemStatus?.hasAccess ?? false;
 
-  // Consider it active if either source says it's active
   const isActive = (hasPaidPlan && isUserActive) || hasCreemAccess;
 
   return (
@@ -85,13 +83,6 @@ export function SubscriptionStatus() {
             {isActive ? "Active" : "Inactive"}
           </Chip>
         </div>
-
-        {userPlan !== "free" && (
-          <div className="text-xs text-muted-foreground mt-1">
-            <p>Plan: {planDetails?.name}</p>
-            <p>Status from DB: {userStatus}</p>
-          </div>
-        )}
 
         {creemStatus?.expiresAt && (
           <p className="text-xs text-muted-foreground">

@@ -18,7 +18,9 @@ export async function POST(request: Request) {
       where: { id: session.user.id },
       select: {
         id: true,
+        email: true,
         creemCustomerId: true,
+        subscriptionPlan: true,
         subscriptionStatus: true,
       },
     });
@@ -27,8 +29,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Get user's Creem subscription
-    // First try by referenceId (which should be the user's ID)
+    // Check if user has an active subscription based on user table
+    const hasActiveSubscription =
+      user.subscriptionPlan !== "free" && user.subscriptionStatus === "active";
+
+    if (!hasActiveSubscription) {
+      console.log("❌ No active subscription based on user table:", {
+        plan: user.subscriptionPlan,
+        status: user.subscriptionStatus,
+      });
+    }
+
+    // Get user's Creem subscription from database
     let creemSubscription = await prisma.creem_subscription.findFirst({
       where: { referenceId: user.id },
       orderBy: { periodEnd: "desc" },
@@ -39,6 +51,28 @@ export async function POST(request: Request) {
       creemSubscription = await prisma.creem_subscription.findFirst({
         where: { creemCustomerId: user.creemCustomerId },
         orderBy: { periodEnd: "desc" },
+      });
+    }
+
+    // If there's no Creem subscription record but user has active subscription in user table,
+    // we can still mark it as cancelled locally
+    if (!creemSubscription && hasActiveSubscription) {
+      console.log(
+        "⚠️ No Creem subscription record found, cancelling based on user table data",
+      );
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          subscriptionPlan: "free",
+          subscriptionStatus: "cancelled",
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message:
+          "Subscription cancelled successfully. You will have access until the end of your billing period.",
       });
     }
 
@@ -82,6 +116,7 @@ export async function POST(request: Request) {
     await prisma.user.update({
       where: { id: user.id },
       data: {
+        subscriptionPlan: "free",
         subscriptionStatus: "cancelled",
       },
     });

@@ -257,10 +257,7 @@ export function SubscriptionManager({
               onChange={(e) => setSelectedPlan(e.target.value)}
             >
               {availablePlans.map((plan) => (
-                <SelectItem
-                  key={plan.id}
-                  textValue={`${plan.name} - $${plan.price}/month`}
-                >
+                <SelectItem key={plan.id}>
                   {plan.name} - ${plan.price}/month
                 </SelectItem>
               ))}
