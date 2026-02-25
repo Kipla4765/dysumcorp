@@ -74,15 +74,4 @@ const nextConfig = {
   compress: true,
 };
 
-const sentryWebpackPluginOptions = {
-  org: process.env.SENTRY_ORG,
-  project: "dysumcorp",
-  silent: true,
-  widenClientFileUpload: true,
-  hideSourceMaps: true,
-  disableLogger: true,
-};
-
-const withSentryConfig = require("@sentry/nextjs").withSentryConfig;
-
-module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+module.exports = nextConfig;
