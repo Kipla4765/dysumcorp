@@ -22,6 +22,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -1096,6 +1097,9 @@ export default function CreatePortalPage() {
     welcomeMessage: "",
     submitButtonText: "Initialize Transfer",
     successMessage: "Transmission Verified",
+    textboxSectionEnabled: false,
+    textboxSectionTitle: "",
+    textboxSectionRequired: false,
   });
 
   const steps: { id: Step; label: string; icon: any }[] = [
@@ -1503,6 +1507,9 @@ export default function CreatePortalPage() {
           welcomeMessage: formData.welcomeMessage || null,
           submitButtonText: formData.submitButtonText,
           successMessage: formData.successMessage,
+          textboxSectionEnabled: formData.textboxSectionEnabled,
+          textboxSectionTitle: formData.textboxSectionTitle || null,
+          textboxSectionRequired: formData.textboxSectionRequired,
 
           whiteLabeled: false,
         }),
@@ -2114,6 +2121,64 @@ export default function CreatePortalPage() {
                               }
                             />
                           </div>
+                        </div>
+
+                        <div className="border-t border-border pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <h3 className="font-semibold text-foreground">
+                                Textbox Section
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                Add a text input field for clients to fill out
+                              </p>
+                            </div>
+                            <Switch
+                              checked={formData.textboxSectionEnabled}
+                              onCheckedChange={(checked) =>
+                                updateFormData("textboxSectionEnabled", checked)
+                              }
+                            />
+                          </div>
+
+                          {formData.textboxSectionEnabled && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-0 md:pl-0">
+                              <div>
+                                <label className="block text-sm font-semibold text-foreground mb-2">
+                                  Textbox Label
+                                </label>
+                                <input
+                                  className="w-full px-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-ring transition-all outline-none font-semibold text-foreground"
+                                  type="text"
+                                  placeholder="e.g., Notes or Comments"
+                                  value={formData.textboxSectionTitle}
+                                  onChange={(e) =>
+                                    updateFormData(
+                                      "textboxSectionTitle",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </div>
+
+                              <div className="flex items-end">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                  <Switch
+                                    checked={formData.textboxSectionRequired}
+                                    onCheckedChange={(checked) =>
+                                      updateFormData(
+                                        "textboxSectionRequired",
+                                        checked,
+                                      )
+                                    }
+                                  />
+                                  <span className="text-sm font-medium text-foreground">
+                                    Required field
+                                  </span>
+                                </label>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         <div className="bg-primary rounded-xl p-6 text-primary-foreground shadow-lg">

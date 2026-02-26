@@ -43,6 +43,9 @@ interface Portal {
   welcomeMessage: string | null;
   submitButtonText: string;
   successMessage: string;
+  textboxSectionEnabled: boolean;
+  textboxSectionTitle: string | null;
+  textboxSectionRequired: boolean;
   userId: string;
 }
 
@@ -66,6 +69,7 @@ export default function PublicPortalPage() {
   const [uploaderEmail, setUploaderEmail] = useState("");
   const [portalPassword, setPortalPassword] = useState("");
   const [clientFolderName, setClientFolderName] = useState("");
+  const [textboxValue, setTextboxValue] = useState("");
 
   useEffect(() => {
     fetchPortal();
@@ -827,11 +831,34 @@ export default function PublicPortalPage() {
                           onChange={(e) => setUploaderEmail(e.target.value)}
                         />
                       </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
 
-                {/* File Upload Area */}
+                  {/* Textbox Section */}
+                  {portal.textboxSectionEnabled && (
+                    <div className="mb-10">
+                      <div className="space-y-3">
+                        <label className="block text-xs font-bold uppercase tracking-[0.2em] text-stone-500">
+                          {portal.textboxSectionTitle || "Notes"}
+                          {portal.textboxSectionRequired && " *"}
+                        </label>
+                        <textarea
+                          className="w-full px-4 py-3 rounded-xl border-stone-200 focus:border-[#1c1917] font-medium transition-all bg-white resize-none"
+                          style={{
+                            color: portal.textColor,
+                          }}
+                          placeholder="Enter any notes or comments..."
+                          rows={3}
+                          value={textboxValue}
+                          onChange={(e) => setTextboxValue(e.target.value)}
+                          required={portal.textboxSectionRequired}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* File Upload Area */}
                 <div
                   className="border-2 border-dashed rounded-[2rem] p-12 md:p-20 text-center mb-10 transition-all bg-[#fafaf9] hover:bg-stone-50 group cursor-pointer"
                   style={{
