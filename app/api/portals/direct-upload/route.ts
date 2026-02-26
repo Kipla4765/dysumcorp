@@ -342,21 +342,22 @@ export async function POST(request: NextRequest) {
       }
 
       uploadData = {
-        method: "direct",
+        method: "stream",
         provider: "google",
         uploadUrl,
         uploadToken,
+        chunkSize: 4 * 1024 * 1024, // 4MB chunks
       };
 
       console.log(
-        "[Portal Direct Upload] Google Drive resumable upload URL created",
+        "[Portal Direct Upload] Google Drive resumable upload URL created for streaming",
       );
     } else {
       // Dropbox direct upload
       const dropboxPath = `/${folderPath}/${fileName}`;
 
       uploadData = {
-        method: "direct",
+        method: "stream",
         provider: "dropbox",
         uploadUrl: "https://content.dropboxapi.com/2/files/upload",
         uploadPath: dropboxPath,
