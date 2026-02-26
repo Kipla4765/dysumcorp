@@ -442,8 +442,6 @@ export default function PublicPortalPage() {
           setFileProgress((prev) => ({ ...prev, [i]: 100 }));
           console.log(`[Upload] File uploaded to Dropbox: ${file.name}`);
 
-          storageUrl = uploadResponse.url;
-          storageFileId = uploadResponse.id;
         } else {
           throw new Error(`Unsupported upload method: ${uploadData.method} for provider: ${uploadData.provider}`);
         }
