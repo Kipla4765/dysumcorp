@@ -13,7 +13,8 @@
       "maxDuration": 10
     },
     "app/api/portals/upload-chunk/route.ts": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "maxBodySize": "10mb"
     },
     "app/api/storage/direct-upload/route.ts": {
       "maxDuration": 10

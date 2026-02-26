@@ -6,9 +6,11 @@ const nextConfig = {
   // Optimize for production
   reactStrictMode: true,
 
-  // Increase body size limit for file uploads (50MB)
+  // Increase body size limit for file uploads (10MB to accommodate 8MB chunks)
   experimental: {
-    proxyClientMaxBodySize: "50mb",
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
 
   // Exclude reference folders and dysum subfolder from build

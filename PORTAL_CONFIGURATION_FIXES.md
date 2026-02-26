@@ -92,6 +92,23 @@ This document tracks all changes made to fix portal configurations and implement
 
 ---
 
+### CHANGE #10: Increase API body size limit for 8MB chunks
+**Files:** 
+- `vercel.json` - Added `"maxBodySize": "10mb"` to upload-chunk function
+- `next.config.js` - Updated experimental settings for body size limit
+
+**Description:** Configured Vercel and Next.js to accept 10MB request bodies to accommodate 8MB chunks plus overhead. Without this, the server returns 413 (Content Too Large) errors.
+
+**Status:** ✅ Complete
+
+**Reversal:** 
+- Remove `"maxBodySize": "10mb"` from vercel.json upload-chunk function
+- Revert next.config.js experimental settings
+
+**Note:** After deploying these changes, you may need to redeploy to Vercel for the configuration to take effect.
+
+---
+
 ## Verification Checklist
 
 ### Portal Configuration Features (Already Working)
