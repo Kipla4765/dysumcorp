@@ -541,29 +541,36 @@ export default function DashboardPage() {
                       <span className="hidden sm:inline">Copy Link</span>
                       <span className="sm:hidden">Copy</span>
                     </Button>
-                    <Switch
-                      checked={portal.isActive}
-                      loading={togglingPortal === portal.id}
-                      title={
-                        portal.isActive
-                          ? "Deactivate Portal"
-                          : "Activate Portal"
-                      }
-                      onCheckedChange={(checked) => {
-                        const mockEvent = {
-                          stopPropagation: () => {},
-                        } as unknown as React.MouseEvent;
+                    <div className="flex items-center justify-between gap-2 py-2">
+                      <div>
+                        <span className="text-sm font-medium text-foreground">
+                          {portal.isActive ? "Active" : "Inactive"}
+                        </span>
+                        <p className="text-xs text-muted-foreground">
+                          {portal.isActive
+                            ? "Portal is accepting uploads"
+                            : "Portal is not accepting uploads"}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={portal.isActive}
+                        loading={togglingPortal === portal.id}
+                        onCheckedChange={(checked) => {
+                          const mockEvent = {
+                            stopPropagation: () => {},
+                          } as unknown as React.MouseEvent;
 
-                        handleToggleActive(
-                          portal.id,
-                          Boolean(checked),
-                          mockEvent,
-                        );
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    />
+                          handleToggleActive(
+                            portal.id,
+                            Boolean(checked),
+                            mockEvent,
+                          );
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      />
+                    </div>
                     <Button
                       className="rounded-xl font-medium text-xs h-8 px-2 sm:px-3"
                       size="sm"
