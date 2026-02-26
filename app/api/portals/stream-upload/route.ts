@@ -86,11 +86,12 @@ export async function POST(request: NextRequest) {
       });
 
     } else if (provider === "dropbox") {
-      // Dropbox upload (single request, no chunking)
+      // Dropbox upload session (chunked)
       const accessToken = formData.get("accessToken") as string;
       const uploadPath = formData.get("uploadPath") as string;
       const isLastChunk = formData.get("isLastChunk") === "true";
       const chunkIndex = parseInt(formData.get("chunkIndex") as string);
+      const sessionId = formData.get("sessionId") as string;
 
       if (!accessToken || !uploadPath) {
         return NextResponse.json(
@@ -99,38 +100,110 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      console.log(`[Stream Upload] Dropbox chunk ${chunkIndex}, last: ${isLastChunk}`);
+      console.log(`[Stream Upload] Dropbox chunk ${chunkIndex}, last: ${isLastChunk}, session: ${sessionId || "new"}`);
 
       const chunkBuffer = Buffer.from(await chunk.arrayBuffer());
 
-      // For Dropbox, we accumulate chunks and upload when complete
-      // This is a simplified version - for production, you'd want to use Dropbox's upload session API
-      if (isLastChunk) {
-        const uploadResponse = await fetch("https://content.dropboxapi.com/2/files/upload", {
+      if (chunkIndex === 0 && !sessionId) {
+        // Start upload session
+        const startResponse = await fetch("https://content.dropboxapi.com/2/files/upload_session/start", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/octet-stream",
+          },
+          body: chunkBuffer,
+        });
+
+        if (!startResponse.ok) {
+          const errorText = await startResponse.text();
+          console.error(`[Stream Upload] Dropbox session start failed:`, startResponse.status, errorText);
+          return NextResponse.json(
+            { error: `Dropbox session start failed: ${startResponse.status}` },
+            { status: startResponse.status }
+          );
+        }
+
+        const sessionData = await startResponse.json();
+        console.log(`[Stream Upload] Dropbox session started: ${sessionData.session_id}`);
+
+        return NextResponse.json({
+          success: true,
+          complete: false,
+          sessionId: sessionData.session_id,
+        });
+
+      } else if (!isLastChunk && sessionId) {
+        // Append to session
+        const offset = chunkIndex * 4 * 1024 * 1024; // Assuming 4MB chunks
+        
+        const appendResponse = await fetch("https://content.dropboxapi.com/2/files/upload_session/append_v2", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/octet-stream",
             "Dropbox-API-Arg": JSON.stringify({
-              path: uploadPath,
-              mode: "add",
-              autorename: true,
-              mute: false,
+              cursor: {
+                session_id: sessionId,
+                offset: offset,
+              },
             }),
           },
           body: chunkBuffer,
         });
 
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text();
-          console.error(`[Stream Upload] Dropbox failed:`, uploadResponse.status, errorText);
+        if (!appendResponse.ok) {
+          const errorText = await appendResponse.text();
+          console.error(`[Stream Upload] Dropbox append failed:`, appendResponse.status, errorText);
           return NextResponse.json(
-            { error: `Dropbox upload failed: ${uploadResponse.status}` },
-            { status: uploadResponse.status }
+            { error: `Dropbox append failed: ${appendResponse.status}` },
+            { status: appendResponse.status }
           );
         }
 
-        const fileData = await uploadResponse.json();
+        console.log(`[Stream Upload] Dropbox chunk ${chunkIndex} appended`);
+
+        return NextResponse.json({
+          success: true,
+          complete: false,
+          sessionId: sessionId,
+        });
+
+      } else if (isLastChunk && sessionId) {
+        // Finish session
+        const offset = chunkIndex * 4 * 1024 * 1024;
+        
+        const finishResponse = await fetch("https://content.dropboxapi.com/2/files/upload_session/finish", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/octet-stream",
+            "Dropbox-API-Arg": JSON.stringify({
+              cursor: {
+                session_id: sessionId,
+                offset: offset,
+              },
+              commit: {
+                path: uploadPath,
+                mode: "add",
+                autorename: true,
+                mute: false,
+              },
+            }),
+          },
+          body: chunkBuffer,
+        });
+
+        if (!finishResponse.ok) {
+          const errorText = await finishResponse.text();
+          console.error(`[Stream Upload] Dropbox finish failed:`, finishResponse.status, errorText);
+          return NextResponse.json(
+            { error: `Dropbox finish failed: ${finishResponse.status}` },
+            { status: finishResponse.status }
+          );
+        }
+
+        const fileData = await finishResponse.json();
         console.log(`[Stream Upload] Dropbox complete, file ID: ${fileData.id}`);
 
         return NextResponse.json({
@@ -139,11 +212,10 @@ export async function POST(request: NextRequest) {
           fileData,
         });
       } else {
-        // Chunk received, waiting for more
-        return NextResponse.json({
-          success: true,
-          complete: false,
-        });
+        return NextResponse.json(
+          { error: "Invalid Dropbox upload state" },
+          { status: 400 }
+        );
       }
 
     } else {
