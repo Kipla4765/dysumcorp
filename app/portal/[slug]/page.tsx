@@ -431,7 +431,7 @@ export default function PublicPortalPage() {
               "Upload completed but no storage information received",
             );
           }
-        } else {
+        } else if (uploadData.provider === "dropbox" && uploadData.method === "direct") {
           // Dropbox upload (direct from browser)
           const uploadResponse = await new Promise<{ url: string; id: string }>(
             (resolve, reject) => {
@@ -492,6 +492,8 @@ export default function PublicPortalPage() {
 
           storageUrl = uploadResponse.url;
           storageFileId = uploadResponse.id;
+        } else {
+          throw new Error(`Unsupported upload method: ${uploadData.method} for provider: ${uploadData.provider}`);
         }
 
         console.log(
