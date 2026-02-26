@@ -357,98 +357,122 @@ export default function PublicPortalPage() {
           `[Upload] Upload credentials received for ${file.name}, provider: ${uploadData.provider}`,
         );
 
-        // Step 2: Upload directly to cloud storage
+        // Step 2: Upload to cloud storage via streaming
         let storageUrl = "";
         let storageFileId = "";
 
-        if (
-          uploadData.provider === "google" &&
-          uploadData.method === "direct"
-        ) {
-          // Google Drive direct upload (resumable upload to Google Drive)
-          // Google Drive direct upload (resumable upload)
-          const uploadResult = await new Promise<{ id: string }>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-
-            xhr.upload.addEventListener("progress", (e) => {
-              if (e.lengthComputable) {
-                const percentComplete = Math.round((e.loaded / e.total) * 100);
-                setFileProgress((prev) => ({ ...prev, [i]: percentComplete }));
-              }
-            });
-
-            xhr.addEventListener("load", () => {
-              console.log(`[Upload] Google Drive response status: ${xhr.status}`);
-              if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                  const response = JSON.parse(xhr.responseText);
-                  console.log(`[Upload] File uploaded, ID: ${response.id}`);
-                  resolve(response);
-                } catch (e) {
-                  console.error(`[Upload] Parse error:`, e);
-                  reject(new Error("Failed to parse upload response"));
-                }
-              } else {
-                console.error(`[Upload] Upload failed:`, xhr.status, xhr.responseText.substring(0, 200));
-                reject(new Error(`Upload failed with status ${xhr.status}`));
-              }
-            });
-
-            xhr.addEventListener("error", () => {
-              console.error(`[Upload] Network error`);
-              reject(new Error("Network error during upload"));
-            });
-
-            console.log(`[Upload] Uploading ${file.size} bytes directly to Google Drive`);
-            xhr.open("PUT", uploadData.uploadUrl);
-            xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-            xhr.send(file);
-          });
-
-          storageFileId = uploadResult.id;
-          storageUrl = `https://drive.google.com/file/d/${uploadResult.id}/view`;
-          console.log(`[Upload] File uploaded to Google Drive: ${file.name}`);
-        } else if (uploadData.provider === "dropbox" && uploadData.method === "stream") {
-          // Dropbox streaming upload through server
-          console.log(`[Upload] Uploading ${file.name} to Dropbox through server`);
-
-          const formData = new FormData();
-          formData.append("chunk", file);
-          formData.append("provider", "dropbox");
-          formData.append("accessToken", uploadData.accessToken);
-          formData.append("uploadPath", uploadData.uploadPath);
-          formData.append("uploadToken", uploadData.uploadToken);
-          formData.append("isLastChunk", "true");
-          formData.append("chunkIndex", "0");
-
-          const streamResponse = await fetch("/api/portals/stream-upload", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!streamResponse.ok) {
-            const errorData = await streamResponse.json();
-            throw new Error(errorData.error || "Failed to upload to Dropbox");
-          }
-
-          const streamResult = await streamResponse.json();
+        if (uploadData.method === "stream") {
+          const chunkSize = uploadData.chunkSize || 4 * 1024 * 1024;
+          const totalChunks = Math.ceil(file.size / chunkSize);
           
-          if (!streamResult.complete || !streamResult.fileData) {
-            throw new Error("Upload completed but no file data received");
+          console.log(`[Upload] Streaming ${file.name} in ${totalChunks} chunks`);
+
+          if (uploadData.provider === "google") {
+            // Google Drive streaming upload
+            let fileData = null;
+            
+            for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+              const start = chunkIndex * chunkSize;
+              const end = Math.min(start + chunkSize, file.size);
+              const chunk = file.slice(start, end);
+
+              const formData = new FormData();
+              formData.append("chunk", chunk);
+              formData.append("provider", "google");
+              formData.append("uploadUrl", uploadData.uploadUrl);
+              formData.append("chunkStart", start.toString());
+              formData.append("chunkEnd", end.toString());
+              formData.append("totalSize", file.size.toString());
+              formData.append("uploadToken", uploadData.uploadToken);
+
+              const response = await fetch("/api/portals/stream-upload", {
+                method: "POST",
+                body: formData,
+              });
+
+              if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || "Upload failed");
+              }
+
+              const result = await response.json();
+              
+              setFileProgress((prev) => ({ 
+                ...prev, 
+                [i]: Math.round((end / file.size) * 100) 
+              }));
+
+              if (result.complete && result.fileData) {
+                fileData = result.fileData;
+                break;
+              }
+            }
+
+            if (!fileData?.id) {
+              throw new Error("Upload completed but no file data received");
+            }
+
+            storageFileId = fileData.id;
+            storageUrl = `https://drive.google.com/file/d/${fileData.id}/view`;
+            console.log(`[Upload] File uploaded to Google Drive: ${file.name}`);
+            
+          } else if (uploadData.provider === "dropbox") {
+            // Dropbox streaming upload
+            let sessionId = "";
+            
+            for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+              const start = chunkIndex * chunkSize;
+              const end = Math.min(start + chunkSize, file.size);
+              const chunk = file.slice(start, end);
+              const isLastChunk = chunkIndex === totalChunks - 1;
+
+              const formData = new FormData();
+              formData.append("chunk", chunk);
+              formData.append("provider", "dropbox");
+              formData.append("accessToken", uploadData.accessToken);
+              formData.append("uploadPath", uploadData.uploadPath);
+              formData.append("uploadToken", uploadData.uploadToken);
+              formData.append("isLastChunk", isLastChunk.toString());
+              formData.append("chunkIndex", chunkIndex.toString());
+              if (sessionId) {
+                formData.append("sessionId", sessionId);
+              }
+
+              const response = await fetch("/api/portals/stream-upload", {
+                method: "POST",
+                body: formData,
+              });
+
+              if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || "Upload failed");
+              }
+
+              const result = await response.json();
+              
+              if (result.sessionId) {
+                sessionId = result.sessionId;
+              }
+
+              setFileProgress((prev) => ({ 
+                ...prev, 
+                [i]: Math.round((end / file.size) * 100) 
+              }));
+
+              if (result.complete && result.fileData) {
+                storageFileId = result.fileData.id;
+                storageUrl = result.fileData.id;
+                console.log(`[Upload] File uploaded to Dropbox: ${file.name}`);
+                break;
+              }
+            }
+          } else {
+            throw new Error(`Unsupported provider: ${uploadData.provider}`);
           }
-
-          storageFileId = streamResult.fileData.id;
-          storageUrl = streamResult.fileData.id;
-          setFileProgress((prev) => ({ ...prev, [i]: 100 }));
-          console.log(`[Upload] File uploaded to Dropbox: ${file.name}`);
-
+          
         } else {
-          throw new Error(`Unsupported upload method: ${uploadData.method} for provider: ${uploadData.provider}`);
+          throw new Error(`Unsupported upload method: ${uploadData.method}`);
         }
-
-        console.log(
-          `[Upload] File uploaded to ${uploadData.provider}: ${file.name}`,
-        );
 
         // Step 3: Confirm upload and save metadata
         const confirmResponse = await fetch("/api/portals/confirm-upload", {
