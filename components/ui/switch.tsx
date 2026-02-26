@@ -32,17 +32,17 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
         />
         <div
           className={cn(
-            "w-11 h-6 rounded-full border-2 transition-all duration-200",
+            "relative w-11 h-6 rounded-full transition-all duration-200",
             checked
-              ? "bg-emerald-500 border-emerald-500"
-              : "bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600",
+              ? "bg-emerald-500"
+              : "bg-gray-200 dark:bg-gray-700",
             isDisabled && "opacity-50 cursor-not-allowed",
             className,
           )}
         >
           <div
             className={cn(
-              "absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow-md transition-all duration-200",
+              "absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200",
               checked && "translate-x-5",
             )}
           />
