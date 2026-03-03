@@ -11,6 +11,9 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./lib/generated/prisma/**/*'],
+    },
   },
 
   // Exclude reference folders and dysum subfolder from build
