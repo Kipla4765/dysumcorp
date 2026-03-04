@@ -1,28 +1,8 @@
 import { betterAuth } from "better-auth";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { creem } from "@creem_io/better-auth";
-import pg from "pg";
-
 import { PrismaClient } from "@/lib/generated/prisma/client";
 import { sendWelcomeEmail, sendSignInNotification } from "@/lib/email-service";
-
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-});
-
-pool.on("error", (err) => {
-  console.error("Unexpected error on idle client", err);
-});
-
-const adapter = new PrismaPg(pool);
-
-const prismaClient = new PrismaClient({
-  adapter,
-  log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-});
+import { prisma } from "@/lib/prisma";
 
 export const auth = betterAuth({
   database: {
@@ -151,7 +131,7 @@ export const auth = betterAuth({
       persistSubscriptions: true,
       onCheckoutCompleted: async ({ customer }) => {
         if (customer?.email) {
-          await prismaClient.user.updateMany({
+          await prisma.user.updateMany({
             where: { email: customer.email },
             data: { subscriptionStatus: "active" },
           });
@@ -161,7 +141,7 @@ export const auth = betterAuth({
         const planId = metadata?.planId as string | undefined;
 
         if (planId && planId !== "free" && customer?.email) {
-          await prismaClient.user.updateMany({
+          await prisma.user.updateMany({
             where: { email: customer.email },
             data: {
               subscriptionPlan: planId,
@@ -173,7 +153,7 @@ export const auth = betterAuth({
       },
       onRevokeAccess: async ({ customer }) => {
         if (customer?.email) {
-          await prismaClient.user.updateMany({
+          await prisma.user.updateMany({
             where: { email: customer.email },
             data: {
               subscriptionPlan: "free",
@@ -186,4 +166,5 @@ export const auth = betterAuth({
   ],
 });
 
-export const prisma = prismaClient;
+// Export prisma from the shared instance
+export { prisma };
