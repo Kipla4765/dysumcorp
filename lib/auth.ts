@@ -1,5 +1,4 @@
 import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { creem } from "@creem_io/better-auth";
 import pg from "pg";
@@ -20,15 +19,13 @@ pool.on("error", (err) => {
 
 const adapter = new PrismaPg(pool);
 
-const prisma = new PrismaClient({
+const prismaClient = new PrismaClient({
   adapter,
   log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
 });
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
-  }),
+  database: prismaClient,
   emailAndPassword: {
     enabled: false,
   },
@@ -151,7 +148,7 @@ export const auth = betterAuth({
       persistSubscriptions: true,
       onCheckoutCompleted: async ({ customer }) => {
         if (customer?.email) {
-          await prisma.user.updateMany({
+          await prismaClient.user.updateMany({
             where: { email: customer.email },
             data: { subscriptionStatus: "active" },
           });
@@ -161,7 +158,7 @@ export const auth = betterAuth({
         const planId = metadata?.planId as string | undefined;
 
         if (planId && planId !== "free" && customer?.email) {
-          await prisma.user.updateMany({
+          await prismaClient.user.updateMany({
             where: { email: customer.email },
             data: {
               subscriptionPlan: planId,
@@ -173,7 +170,7 @@ export const auth = betterAuth({
       },
       onRevokeAccess: async ({ customer }) => {
         if (customer?.email) {
-          await prisma.user.updateMany({
+          await prismaClient.user.updateMany({
             where: { email: customer.email },
             data: {
               subscriptionPlan: "free",
@@ -186,4 +183,4 @@ export const auth = betterAuth({
   ],
 });
 
-export { prisma };
+export const prisma = prismaClient;
