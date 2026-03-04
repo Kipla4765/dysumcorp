@@ -2,18 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import {
-  Upload,
-  FileText,
-  CheckCircle,
-  AlertCircle,
-  Lock,
-  Loader2,
-  X,
-} from "lucide-react";
+import { Lock, Loader2, AlertCircle, Upload } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PortalHeader } from "@/components/portal/portal-header";
+import { PortalInput } from "@/components/portal/portal-input";
+import { PortalTextarea } from "@/components/portal/portal-textarea";
+import { PortalDropZone } from "@/components/portal/portal-drop-zone";
+import { PortalFileList } from "@/components/portal/portal-file-list";
+import { PortalButton } from "@/components/portal/portal-button";
+import { PortalSuccessView } from "@/components/portal/portal-success-view";
 
 interface Portal {
   id: string;
@@ -24,9 +21,11 @@ interface Portal {
   isActive: boolean;
   // Branding
   primaryColor: string;
+  secondaryColor?: string;
   textColor: string;
   backgroundColor: string;
   cardBackgroundColor: string;
+  gradientEnabled?: boolean;
   logoUrl: string | null;
   // Storage
   storageProvider: string | null;
@@ -49,6 +48,13 @@ interface Portal {
   userId: string;
 }
 
+interface UploadFile {
+  id: string;
+  file: File;
+  progress: number;
+  status: "pending" | "uploading" | "done";
+}
+
 export default function PublicPortalPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -59,17 +65,14 @@ export default function PublicPortalPage() {
   const [authenticating, setAuthenticating] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
-  const [fileProgress, setFileProgress] = useState<Record<number, number>>({});
-  const [uploadStatus, setUploadStatus] = useState<
-    "idle" | "success" | "error"
-  >("idle");
+  const [files, setFiles] = useState<UploadFile[]>([]);
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [uploaderName, setUploaderName] = useState("");
   const [uploaderEmail, setUploaderEmail] = useState("");
   const [portalPassword, setPortalPassword] = useState("");
-  const [clientFolderName, setClientFolderName] = useState("");
   const [textboxValue, setTextboxValue] = useState("");
+  const [sentFiles, setSentFiles] = useState<Array<{ name: string; size: number; type: string }>>([]);
 
   useEffect(() => {
     fetchPortal();
@@ -107,7 +110,6 @@ export default function PublicPortalPage() {
 
     if (!portalPassword.trim()) {
       setPasswordError("Please enter the password");
-
       return;
     }
 
@@ -138,90 +140,28 @@ export default function PublicPortalPage() {
     const fileName = file.name.toLowerCase();
     const fileExtension = fileName.split(".").pop() || "";
 
-    // Common text-based extensions that browsers might not recognize properly
     const textExtensions = [
-      "txt",
-      "md",
-      "markdown",
-      "js",
-      "jsx",
-      "ts",
-      "tsx",
-      "json",
-      "html",
-      "htm",
-      "css",
-      "scss",
-      "sass",
-      "less",
-      "xml",
-      "yaml",
-      "yml",
-      "csv",
-      "log",
-      "py",
-      "rb",
-      "php",
-      "java",
-      "c",
-      "cpp",
-      "h",
-      "hpp",
-      "cs",
-      "go",
-      "rs",
-      "swift",
-      "kt",
-      "sql",
-      "sh",
-      "bash",
-      "zsh",
-      "ps1",
-      "bat",
-      "cmd",
-      "ini",
-      "conf",
-      "cfg",
-      "toml",
-      "env",
-      "gitignore",
-      "dockerfile",
+      "txt", "md", "markdown", "js", "jsx", "ts", "tsx", "json", "html", "htm",
+      "css", "scss", "sass", "less", "xml", "yaml", "yml", "csv", "log", "py",
+      "rb", "php", "java", "c", "cpp", "h", "hpp", "cs", "go", "rs", "swift",
+      "kt", "sql", "sh", "bash", "zsh", "ps1", "bat", "cmd", "ini", "conf",
+      "cfg", "toml", "env", "gitignore", "dockerfile",
     ];
 
     return allowedTypes.some((allowedType) => {
       const allowed = allowedType.toLowerCase();
 
-      // Handle wildcard types like "image/*", "text/*", "video/*", "audio/*"
       if (allowed.endsWith("/*")) {
         const baseType = allowed.replace("/*", "");
-
-        // For text/*, also check common text extensions
         if (baseType === "text") {
-          return (
-            textExtensions.includes(fileExtension) ||
-            fileType.startsWith("text")
-          );
+          return textExtensions.includes(fileExtension) || fileType.startsWith("text");
         }
-
         return fileType.startsWith(baseType);
       }
 
-      // Handle exact MIME types
-      if (fileType === allowed) {
-        return true;
-      }
-
-      // Handle extensions (with or without dot)
-      if (allowed.startsWith(".")) {
-        return fileName.endsWith(allowed);
-      }
-
-      // Check if the allowed type matches the extension
-      if (fileExtension === allowed) {
-        return true;
-      }
-
-      // Check if it's a comma-separated list of MIME types
+      if (fileType === allowed) return true;
+      if (allowed.startsWith(".")) return fileName.endsWith(allowed);
+      if (fileExtension === allowed) return true;
       if (allowed.includes(",")) {
         return allowed.split(",").some((type) => type.trim() === fileType);
       }
@@ -230,105 +170,98 @@ export default function PublicPortalPage() {
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && portal) {
-      const selectedFiles = Array.from(e.target.files);
-      const portalMaxSize = parseInt(portal.maxFileSize);
-      const portalAllowedTypes = portal.allowedFileTypes || [];
+  const addFiles = (incoming: FileList) => {
+    if (!portal) return;
 
-      // Filter files by allowed types
-      let validFiles = selectedFiles;
+    const selectedFiles = Array.from(incoming);
+    const portalMaxSize = parseInt(portal.maxFileSize);
+    const portalAllowedTypes = portal.allowedFileTypes || [];
 
-      if (portalAllowedTypes.length > 0) {
-        validFiles = selectedFiles.filter((file) =>
-          isFileTypeAllowed(file, portalAllowedTypes),
-        );
+    let validFiles = selectedFiles;
 
-        if (validFiles.length < selectedFiles.length) {
-          setErrorMessage(
-            "Some files were removed due to allowed file type restrictions",
-          );
-          setTimeout(() => setErrorMessage(""), 3000);
-        }
-      }
+    if (portalAllowedTypes.length > 0) {
+      validFiles = selectedFiles.filter((file) =>
+        isFileTypeAllowed(file, portalAllowedTypes)
+      );
 
-      // Filter by size
-      const oversizedFiles = validFiles.filter((f) => f.size > portalMaxSize);
-
-      if (oversizedFiles.length > 0) {
-        setErrorMessage(
-          `Some files exceed the ${(portalMaxSize / 1024 / 1024).toFixed(0)}MB limit`,
-        );
+      if (validFiles.length < selectedFiles.length) {
+        setErrorMessage("Some files were removed due to file type restrictions");
         setTimeout(() => setErrorMessage(""), 3000);
-        validFiles = validFiles.filter((f) => f.size <= portalMaxSize);
       }
-
-      setFiles(validFiles);
-      setUploadStatus("idle");
     }
+
+    const oversizedFiles = validFiles.filter((f) => f.size > portalMaxSize);
+    if (oversizedFiles.length > 0) {
+      setErrorMessage(
+        `Some files exceed the ${(portalMaxSize / 1024 / 1024).toFixed(0)}MB limit`
+      );
+      setTimeout(() => setErrorMessage(""), 3000);
+      validFiles = validFiles.filter((f) => f.size <= portalMaxSize);
+    }
+
+    const newFiles: UploadFile[] = validFiles.map((f) => ({
+      id: Math.random().toString(36).slice(2),
+      file: f,
+      progress: 0,
+      status: "pending",
+    }));
+
+    setFiles((prev) => [...prev, ...newFiles]);
+    setUploadStatus("idle");
   };
 
-  const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+  const removeFile = (id: string) => {
+    setFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   const handleUpload = async () => {
     if (files.length === 0) {
       setErrorMessage("Please select at least one file");
-
       return;
     }
 
     if (!portal) {
       setErrorMessage("Portal information not loaded");
-
       return;
     }
 
-    // Validate required fields based on portal config
     if (portal.requireClientName && !uploaderName.trim()) {
       setErrorMessage("Please enter your name");
-
       return;
     }
 
     if (portal.requireClientEmail) {
       if (!uploaderEmail.trim()) {
         setErrorMessage("Please enter your email");
-
         return;
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
       if (!emailRegex.test(uploaderEmail)) {
         setErrorMessage("Please enter a valid email address");
-
         return;
       }
     }
 
     setUploading(true);
-    setFileProgress({});
     setUploadStatus("idle");
     setErrorMessage("");
 
-    const successfulFiles: Array<{ name: string; size: number }> = [];
+    const successfulFiles: Array<{ name: string; size: number; type: string }> = [];
 
     try {
-      // Upload multiple files in parallel (each file's chunks are sequential)
-      const uploadPromises = files.map(async (file, i) => {
+      const uploadPromises = files.map(async (uploadFile, i) => {
+        const file = uploadFile.file;
         const portalMaxSize = parseInt(portal.maxFileSize);
 
-        // Double-check size
         if (file.size > portalMaxSize) {
           throw new Error(`${file.name} exceeds the portal's size limit`);
         }
 
-        console.log(
-          `[Upload] Starting upload for file ${i + 1}/${files.length}: ${file.name}`,
-        );
+        console.log(`[Upload] Starting upload for file ${i + 1}/${files.length}: ${file.name}`);
 
-        setFileProgress((prev) => ({ ...prev, [i]: 0 }));
+        setFiles((prev) =>
+          prev.map((f) => (f.id === uploadFile.id ? { ...f, status: "uploading" as const, progress: 0 } : f))
+        );
 
         // Step 1: Get upload URL/credentials
         const directUploadResponse = await fetch("/api/portals/direct-upload", {
@@ -351,9 +284,7 @@ export default function PublicPortalPage() {
 
         const uploadData = await directUploadResponse.json();
 
-        console.log(
-          `[Upload] Upload credentials received for ${file.name}, provider: ${uploadData.provider}`,
-        );
+        console.log(`[Upload] Upload credentials received for ${file.name}, provider: ${uploadData.provider}`);
 
         // Step 2: Upload to cloud storage via streaming
         let storageUrl = "";
@@ -362,13 +293,12 @@ export default function PublicPortalPage() {
         if (uploadData.method === "stream") {
           const chunkSize = uploadData.chunkSize || 4 * 1024 * 1024;
           const totalChunks = Math.ceil(file.size / chunkSize);
-          
+
           console.log(`[Upload] Streaming ${file.name} in ${totalChunks} chunks`);
 
           if (uploadData.provider === "google") {
-            // Google Drive streaming upload (sequential chunks per file)
             let fileData = null;
-            
+
             for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
               const start = chunkIndex * chunkSize;
               const end = Math.min(start + chunkSize, file.size);
@@ -394,11 +324,12 @@ export default function PublicPortalPage() {
               }
 
               const result = await response.json();
-              
-              setFileProgress((prev) => ({ 
-                ...prev, 
-                [i]: Math.round((end / file.size) * 100) 
-              }));
+
+              setFiles((prev) =>
+                prev.map((f) =>
+                  f.id === uploadFile.id ? { ...f, progress: Math.round((end / file.size) * 100) } : f
+                )
+              );
 
               if (result.complete && result.fileData) {
                 fileData = result.fileData;
@@ -413,21 +344,15 @@ export default function PublicPortalPage() {
             storageFileId = fileData.id;
             storageUrl = `https://drive.google.com/file/d/${fileData.id}/view`;
             console.log(`[Upload] File uploaded to Google Drive: ${file.name}`);
-            
           } else if (uploadData.provider === "dropbox") {
-            // Dropbox parallel chunk upload with dynamic concurrency
-            // Vercel limit: ~10 concurrent functions, we use 8 for safety
             const MAX_CONCURRENT_CHUNKS = 8;
-            
-            // Dynamic concurrency: distribute across files
-            // 1 file = 8 chunks at once, 2 files = 4 each, 8 files = 1 each
             const concurrency = Math.max(1, Math.floor(MAX_CONCURRENT_CHUNKS / files.length));
-            
+
             console.log(`[Upload] Dropbox parallel upload: ${concurrency} chunks at once for ${file.name}`);
-            
+
             let sessionId = "";
             let uploadedBytes = 0;
-            
+
             // Phase 1: Start session with first chunk
             const firstChunk = file.slice(0, Math.min(chunkSize, file.size));
             const startFormData = new FormData();
@@ -438,48 +363,45 @@ export default function PublicPortalPage() {
             startFormData.append("uploadToken", uploadData.uploadToken);
             startFormData.append("isLastChunk", (totalChunks === 1).toString());
             startFormData.append("chunkIndex", "0");
-            
+
             const startResponse = await fetch("/api/portals/stream-upload", {
               method: "POST",
               body: startFormData,
             });
-            
+
             if (!startResponse.ok) {
               const error = await startResponse.json();
               throw new Error(error.error || "Failed to start Dropbox session");
             }
-            
+
             const startResult = await startResponse.json();
             sessionId = startResult.sessionId;
             uploadedBytes = Math.min(chunkSize, file.size);
-            
-            setFileProgress((prev) => ({ 
-              ...prev, 
-              [i]: Math.round((uploadedBytes / file.size) * 100) 
-            }));
-            
-            // If only one chunk, we're done
+
+            setFiles((prev) =>
+              prev.map((f) =>
+                f.id === uploadFile.id ? { ...f, progress: Math.round((uploadedBytes / file.size) * 100) } : f
+              )
+            );
+
             if (totalChunks === 1 && startResult.complete) {
               storageFileId = startResult.fileData.id;
               storageUrl = startResult.fileData.id;
               console.log(`[Upload] Single chunk file uploaded to Dropbox: ${file.name}`);
             } else {
               // Phase 2: Upload remaining chunks in parallel batches
-              const remainingChunks = totalChunks - 1; // Already uploaded chunk 0
-              
               for (let batchStart = 1; batchStart < totalChunks; batchStart += concurrency) {
                 const batchEnd = Math.min(batchStart + concurrency, totalChunks);
                 const isLastBatch = batchEnd === totalChunks;
-                
-                // Create parallel chunk uploads for this batch
+
                 const chunkPromises = [];
-                
+
                 for (let chunkIndex = batchStart; chunkIndex < batchEnd; chunkIndex++) {
                   const start = chunkIndex * chunkSize;
                   const end = Math.min(start + chunkSize, file.size);
                   const chunk = file.slice(start, end);
                   const isLastChunk = chunkIndex === totalChunks - 1;
-                  
+
                   const formData = new FormData();
                   formData.append("chunk", chunk);
                   formData.append("provider", "dropbox");
@@ -489,7 +411,7 @@ export default function PublicPortalPage() {
                   formData.append("isLastChunk", isLastChunk.toString());
                   formData.append("chunkIndex", chunkIndex.toString());
                   formData.append("sessionId", sessionId);
-                  
+
                   const chunkPromise = fetch("/api/portals/stream-upload", {
                     method: "POST",
                     body: formData,
@@ -500,26 +422,24 @@ export default function PublicPortalPage() {
                     }
                     return { chunkIndex, result: await response.json(), bytesUploaded: end - start };
                   });
-                  
+
                   chunkPromises.push(chunkPromise);
                 }
-                
-                // Wait for all chunks in this batch to complete
+
                 const batchResults = await Promise.all(chunkPromises);
-                
-                // Update progress
+
                 for (const { bytesUploaded } of batchResults) {
                   uploadedBytes += bytesUploaded;
                 }
-                
-                setFileProgress((prev) => ({ 
-                  ...prev, 
-                  [i]: Math.round((uploadedBytes / file.size) * 100) 
-                }));
-                
-                // Check if upload is complete (last chunk in last batch)
+
+                setFiles((prev) =>
+                  prev.map((f) =>
+                    f.id === uploadFile.id ? { ...f, progress: Math.round((uploadedBytes / file.size) * 100) } : f
+                  )
+                );
+
                 if (isLastBatch) {
-                  const lastResult = batchResults.find(r => r.result.complete);
+                  const lastResult = batchResults.find((r) => r.result.complete);
                   if (lastResult && lastResult.result.fileData) {
                     storageFileId = lastResult.result.fileData.id;
                     storageUrl = lastResult.result.fileData.id;
@@ -531,7 +451,6 @@ export default function PublicPortalPage() {
           } else {
             throw new Error(`Unsupported provider: ${uploadData.provider}`);
           }
-          
         } else {
           throw new Error(`Unsupported upload method: ${uploadData.method}`);
         }
@@ -559,19 +478,22 @@ export default function PublicPortalPage() {
         }
 
         console.log(`[Upload] Upload confirmed for ${file.name}`);
-        setFileProgress((prev) => ({ ...prev, [i]: 100 }));
+        
+        setFiles((prev) =>
+          prev.map((f) => (f.id === uploadFile.id ? { ...f, progress: 100, status: "done" as const } : f))
+        );
 
         return {
           name: file.name,
           size: file.size,
+          type: file.type,
         };
       });
 
-      // Wait for all files to complete
       const uploadedFiles = await Promise.all(uploadPromises);
       successfulFiles.push(...uploadedFiles);
 
-      // Send batch notification after all files are uploaded
+      // Send batch notification
       if (successfulFiles.length > 0) {
         try {
           await fetch("/api/portals/batch-notification", {
@@ -586,23 +508,15 @@ export default function PublicPortalPage() {
           });
         } catch (notifError) {
           console.error("[Upload] Failed to send notification:", notifError);
-          // Don't fail the upload if notification fails
         }
       }
 
-      // All files uploaded successfully
+      setSentFiles(successfulFiles);
       setUploadStatus("success");
       setFiles([]);
-      setUploaderName("");
-      setUploaderEmail("");
-      setFileProgress({});
     } catch (error) {
       console.error("Upload failed:", error);
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : "Upload failed. Please try again.";
-
+      const errorMsg = error instanceof Error ? error.message : "Upload failed. Please try again.";
       setErrorMessage(errorMsg);
       setUploadStatus("error");
     } finally {
@@ -610,52 +524,30 @@ export default function PublicPortalPage() {
     }
   };
 
-  // Apply branding styles
-  const getBrandingStyles = () => {
-    if (!portal) return {};
-
-    return {
-      "--primary-color": portal.primaryColor || "#3b82f6",
-      "--text-color": portal.textColor || "#0f172a",
-      "--background-color": portal.backgroundColor || "#ffffff",
-      "--card-background-color": portal.cardBackgroundColor || "#ffffff",
-    } as React.CSSProperties;
+  const handleUploadMore = () => {
+    setUploadStatus("idle");
+    setFiles([]);
+    setSentFiles([]);
   };
 
   if (loading) {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={getBrandingStyles()}
+        style={{ background: portal?.backgroundColor || "#f1f5f9" }}
       >
-        <Loader2
-          className="w-8 h-8 animate-spin"
-          style={{ color: portal?.primaryColor }}
-        />
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: portal?.primaryColor || "#6366f1" }} />
       </div>
     );
   }
 
   if (!portal) {
-    const defaultColors = { primaryColor: "#3b82f6", textColor: "#0f172a" };
-
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={getBrandingStyles()}
-      >
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#f1f5f9" }}>
         <div className="text-center">
-          <AlertCircle
-            className="w-12 h-12 mx-auto mb-4"
-            style={{ color: defaultColors.primaryColor }}
-          />
-          <h1
-            className="text-2xl font-bold mb-2"
-            style={{ color: defaultColors.textColor }}
-          >
-            Portal Not Found
-          </h1>
-          <p className="opacity-60">{errorMessage}</p>
+          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+          <h1 className="text-2xl font-bold mb-2 text-slate-800">Portal Not Found</h1>
+          <p className="text-slate-500">{errorMessage}</p>
         </div>
       </div>
     );
@@ -666,33 +558,23 @@ export default function PublicPortalPage() {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={getBrandingStyles()}
+        style={{ background: portal.backgroundColor }}
       >
         <div
-          className="w-full max-w-md p-8 rounded-2xl border"
+          className="w-full max-w-md p-8 rounded-2xl border shadow-lg"
           style={{
             backgroundColor: portal.cardBackgroundColor,
-            borderColor: portal.primaryColor + "30",
+            borderColor: `${portal.primaryColor}30`,
           }}
         >
           <div className="text-center mb-6">
             {portal.logoUrl && (
-              <img
-                alt={portal.name}
-                className="w-16 h-16 mx-auto mb-4 object-contain"
-                src={portal.logoUrl}
-              />
+              <img alt={portal.name} className="w-16 h-16 mx-auto mb-4 object-contain" src={portal.logoUrl} />
             )}
-            <h1
-              className="text-2xl md:text-3xl font-bold serif-font"
-              style={{ color: portal.textColor }}
-            >
+            <h1 className="text-2xl font-bold" style={{ color: portal.textColor }}>
               {portal.name}
             </h1>
-            <p
-              className="mt-2 text-stone-600 font-medium"
-              style={{ color: portal.textColor }}
-            >
+            <p className="mt-2 text-sm" style={{ color: portal.textColor }}>
               This portal is password protected
             </p>
           </div>
@@ -700,36 +582,32 @@ export default function PublicPortalPage() {
           <form className="space-y-6" onSubmit={handlePasswordSubmit}>
             <div className="relative">
               <Lock
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
                 style={{ color: portal.textColor }}
               />
               <input
-                className="w-full pl-12 pr-4 py-4 rounded-xl border border-stone-200 outline-none focus:border-[#1c1917] transition-all font-medium"
+                className="w-full pl-12 pr-4 py-4 rounded-xl border outline-none transition-all font-medium"
                 placeholder="Enter password"
                 style={{
                   backgroundColor: portal.backgroundColor,
                   color: portal.textColor,
+                  borderColor: `${portal.primaryColor}30`,
                 }}
                 type="password"
                 value={portalPassword}
                 onChange={(e) => setPortalPassword(e.target.value)}
               />
             </div>
-            {passwordError && (
-              <p className="text-sm font-bold text-red-500">{passwordError}</p>
-            )}
-            <Button
-              className="w-full py-6 bg-[#1c1917] text-stone-50 rounded-xl font-bold text-base hover:bg-stone-800 transition-all premium-shadow"
-              disabled={authenticating}
-              style={{ backgroundColor: portal.primaryColor }}
+            {passwordError && <p className="text-sm font-bold text-red-500">{passwordError}</p>}
+            <PortalButton
+              primaryColor={portal.primaryColor}
+              secondaryColor={portal.secondaryColor}
+              gradientEnabled={portal.gradientEnabled}
+              loading={authenticating}
               type="submit"
             >
-              {authenticating ? (
-                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-              ) : (
-                "Access Portal"
-              )}
-            </Button>
+              Access Portal
+            </PortalButton>
           </form>
         </div>
       </div>
@@ -737,364 +615,157 @@ export default function PublicPortalPage() {
   }
 
   return (
-    <div
-      className="min-h-screen selection:bg-stone-200"
-      style={getBrandingStyles()}
-    >
+    <div className="min-h-screen flex flex-col" style={{ background: portal.backgroundColor }}>
       {/* Header */}
-      <header
-        className="border-b py-8 px-4 md:px-8 bg-white/50 backdrop-blur-sm"
-        style={{
-          borderColor: portal.primaryColor + "20",
-        }}
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-6">
-            {portal.logoUrl && (
-              <div className="w-16 h-16 bg-white rounded-2xl border border-stone-100 flex items-center justify-center p-2 premium-shadow-sm">
-                <img
-                  alt={portal.name}
-                  className="w-full h-full object-contain"
-                  src={portal.logoUrl}
-                />
-              </div>
-            )}
-            <div>
-              <h1
-                className="text-3xl md:text-4xl font-bold serif-font text-[#1c1917]"
-                style={{ color: portal.textColor }}
-              >
-                {portal.name}
-              </h1>
-              {portal.welcomeMessage && (
-                <p
-                  className="mt-2 text-lg text-stone-600 font-medium"
-                  style={{ color: portal.textColor }}
-                >
-                  {portal.welcomeMessage}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <PortalHeader
+        name={portal.name}
+        logoUrl={portal.logoUrl}
+        welcomeMessage={portal.welcomeMessage}
+        primaryColor={portal.primaryColor}
+        secondaryColor={portal.secondaryColor}
+        textColor={portal.textColor}
+        gradientEnabled={portal.gradientEnabled}
+      />
 
       {/* Main Content */}
-      <main
-        className="py-16 px-4 md:px-8 bg-[#fafaf9]"
-        style={{ backgroundColor: portal.backgroundColor }}
-      >
-        <div className="max-w-4xl mx-auto">
+      <main className="flex-1 flex flex-col items-center py-10 px-4">
+        <div className="w-full max-w-2xl">
           {uploadStatus === "success" ? (
-            <div
-              className="rounded-[2.5rem] p-12 text-center bg-white border border-stone-100 premium-shadow"
-              style={{
-                borderColor: portal.primaryColor + "30",
-              }}
-            >
-              <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-8">
-                <CheckCircle
-                  className="w-10 h-10 text-emerald-500"
-                  style={{ color: portal.primaryColor }}
-                />
-              </div>
-              <h2
-                className="text-3xl font-bold serif-font mb-4 text-[#1c1917]"
-                style={{ color: portal.textColor }}
-              >
-                {portal.successMessage}
-              </h2>
-              <p
-                className="text-lg text-stone-600 font-medium mb-10"
-                style={{ color: portal.textColor }}
-              >
-                Your files have been securely uploaded. Thank you!
-              </p>
-              <Button
-                className="px-8 py-5 bg-[#1c1917] text-stone-50 rounded-xl font-bold text-lg hover:bg-stone-800 transition-all premium-shadow"
-                style={{ backgroundColor: portal.primaryColor }}
-                onClick={() => {
-                  setUploadStatus("idle");
-                  setFiles([]);
-                }}
-              >
-                UPLOAD MORE FILES
-              </Button>
-            </div>
+            <PortalSuccessView
+              uploaderName={uploaderName}
+              uploaderEmail={uploaderEmail}
+              sentFiles={sentFiles}
+              successMessage={portal.successMessage}
+              primaryColor={portal.primaryColor}
+              secondaryColor={portal.secondaryColor}
+              textColor={portal.textColor}
+              gradientEnabled={portal.gradientEnabled}
+              onUploadMore={handleUploadMore}
+            />
           ) : (
             <div
-              className="rounded-[2.5rem] bg-white border border-stone-100 premium-shadow overflow-hidden"
-              style={{
-                borderColor: portal.primaryColor + "20",
-              }}
+              className="rounded-2xl overflow-hidden bg-white border shadow-md"
+              style={{ borderColor: `${portal.primaryColor}20` }}
             >
-              <div className="p-8 md:p-12">
-                <h2
-                  className="text-2xl md:text-3xl font-bold mb-8 serif-font text-[#1c1917]"
-                  style={{ color: portal.textColor }}
-                >
-                  Upload Your Files
-                </h2>
-
-                {/* Client Information */}
-                {(portal.requireClientName || portal.requireClientEmail) && (
-                  <div className="grid md:grid-cols-2 gap-8 mb-10">
-                    {portal.requireClientName && (
-                      <div className="space-y-3">
-                        <label className="block text-xs font-bold uppercase tracking-[0.2em] text-stone-500">
-                          YOUR NAME *
-                        </label>
-                        <Input
-                          className="h-14 rounded-xl border-stone-200 focus:border-[#1c1917] font-medium transition-all"
-                          placeholder="John Doe"
-                          style={{
-                            color: portal.textColor,
-                          }}
-                          type="text"
-                          value={uploaderName}
-                          onChange={(e) => setUploaderName(e.target.value)}
-                        />
-                      </div>
-                    )}
-                    {portal.requireClientEmail && (
-                      <div className="space-y-3">
-                        <label className="block text-xs font-bold uppercase tracking-[0.2em] text-stone-500">
-                          YOUR EMAIL *
-                        </label>
-                        <Input
-                          className="h-14 rounded-xl border-stone-200 focus:border-[#1c1917] font-medium transition-all"
-                          placeholder="john@example.com"
-                          style={{
-                            color: portal.textColor,
-                          }}
-                          type="email"
-                          value={uploaderEmail}
-                          onChange={(e) => setUploaderEmail(e.target.value)}
-                        />
-                      </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Textbox Section */}
-                  {portal.textboxSectionEnabled && (
-                    <div className="mb-10">
-                      <div className="space-y-3">
-                        <label className="block text-xs font-bold uppercase tracking-[0.2em] text-stone-500">
-                          {portal.textboxSectionTitle || "Notes"}
-                          {portal.textboxSectionRequired && " *"}
-                        </label>
-                        <textarea
-                          className="w-full px-4 py-3 rounded-xl border-stone-200 focus:border-[#1c1917] font-medium transition-all bg-white resize-none"
-                          style={{
-                            color: portal.textColor,
-                          }}
-                          placeholder="Enter any notes or comments..."
-                          rows={3}
-                          value={textboxValue}
-                          onChange={(e) => setTextboxValue(e.target.value)}
-                          required={portal.textboxSectionRequired}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* File Upload Area */}
-                <div
-                  className="border-2 border-dashed rounded-[2rem] p-12 md:p-20 text-center mb-10 transition-all bg-[#fafaf9] hover:bg-stone-50 group cursor-pointer"
-                  style={{
-                    borderColor: portal.primaryColor || "#e2e8f0",
-                  }}
-                  onClick={() =>
-                    document.getElementById("file-upload")?.click()
-                  }
-                >
-                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 premium-shadow-sm group-hover:scale-110 transition-transform">
-                    <Upload
-                      className="w-8 h-8 text-[#1c1917]"
-                      style={{ color: portal.primaryColor }}
-                    />
-                  </div>
-                  <p
-                    className="text-xl font-bold text-[#1c1917] mb-2 serif-font"
-                    style={{ color: portal.textColor }}
-                  >
-                    Drag and drop files here
-                  </p>
-                  <p
-                    className="text-stone-500 font-medium mb-8"
-                    style={{ color: portal.textColor }}
-                  >
-                    Or click to browse your computer
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-3">
-                    <span className="px-4 py-1.5 bg-white rounded-full border border-stone-100 text-xs font-bold text-stone-500 uppercase tracking-widest shadow-sm">
-                      Max{" "}
-                      {portal
-                        ? `${(parseInt(portal.maxFileSize) / 1024 / 1024).toFixed(0)}MB`
-                        : "..."}
-                    </span>
-                    {portal.allowedFileTypes &&
-                      portal.allowedFileTypes.length > 0 && (
-                        <span className="px-4 py-1.5 bg-white rounded-full border border-stone-100 text-xs font-bold text-stone-500 uppercase tracking-widest shadow-sm">
-                          {portal.allowedFileTypes.length} Types Allowed
-                        </span>
-                      )}
-                  </div>
-                  <input
-                    multiple
-                    className="hidden"
-                    id="file-upload"
-                    type="file"
-                    onChange={handleFileChange}
+              <div className="p-8 space-y-5">
+                {/* Name */}
+                {portal.requireClientName && (
+                  <PortalInput
+                    label="Your Name"
+                    type="text"
+                    placeholder="Jane Doe"
+                    value={uploaderName}
+                    onChange={(e) => setUploaderName(e.target.value)}
+                    primaryColor={portal.primaryColor}
+                    textColor={portal.textColor}
+                    required
                   />
-                </div>
+                )}
 
-                {/* Selected Files */}
-                {files.length > 0 && portal && (
-                  <div className="mb-10">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-stone-500 mb-4">
-                      Selected Files ({files.length})
-                    </h3>
-                    <div className="space-y-3">
-                      {files.map((file, index) => {
-                        const portalMaxSize = parseInt(portal.maxFileSize);
-                        const isOversized = file.size > portalMaxSize;
+                {/* Email */}
+                {portal.requireClientEmail && (
+                  <PortalInput
+                    label="Email Address"
+                    type="email"
+                    placeholder="jane@example.com"
+                    value={uploaderEmail}
+                    onChange={(e) => setUploaderEmail(e.target.value)}
+                    primaryColor={portal.primaryColor}
+                    textColor={portal.textColor}
+                    required
+                  />
+                )}
 
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 rounded-xl border"
-                            style={{
-                              borderColor: isOversized
-                                ? "#ef4444"
-                                : portal.primaryColor + "20",
-                              backgroundColor: portal.backgroundColor,
-                            }}
-                          >
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <FileText
-                                className={`w-5 h-5 flex-shrink-0 ${
-                                  isOversized ? "text-red-500" : ""
-                                }`}
-                                style={{
-                                  color: isOversized
-                                    ? "#ef4444"
-                                    : portal.primaryColor,
-                                }}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <p
-                                  className="text-sm font-bold truncate text-[#1c1917]"
-                                  style={{ color: portal.textColor }}
-                                >
-                                  {file.name}
-                                  {isOversized && (
-                                    <span className="ml-2 text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
-                                      TOO LARGE
-                                    </span>
-                                  )}
-                                </p>
-                                <p
-                                  className="text-xs font-medium text-stone-500"
-                                  style={{ color: portal.textColor }}
-                                >
-                                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                                </p>
-                              </div>
-                            </div>
+                {/* Textbox Section */}
+                {portal.textboxSectionEnabled && (
+                  <PortalTextarea
+                    label={portal.textboxSectionTitle || "Notes"}
+                    placeholder="Enter any notes or comments..."
+                    rows={4}
+                    value={textboxValue}
+                    onChange={(e) => setTextboxValue(e.target.value)}
+                    primaryColor={portal.primaryColor}
+                    textColor={portal.textColor}
+                    required={portal.textboxSectionRequired}
+                  />
+                )}
 
-                            <div className="flex items-center gap-4">
-                              {uploading &&
-                                fileProgress[index] !== undefined && (
-                                  <span
-                                    className="text-sm font-bold text-[#1c1917]"
-                                    style={{ color: portal.primaryColor }}
-                                  >
-                                    {fileProgress[index]}%
-                                  </span>
-                                )}
-                              <button
-                                className="p-2 hover:bg-stone-100 rounded-xl transition-colors"
-                                disabled={uploading}
-                                onClick={() => removeFile(index)}
-                              >
-                                <X className="w-5 h-5 text-stone-400 hover:text-red-500" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                {/* Drop Zone or File List */}
+                {files.length === 0 ? (
+                  <PortalDropZone
+                    onFilesSelected={addFiles}
+                    primaryColor={portal.primaryColor}
+                    textColor={portal.textColor}
+                    maxFileSize={parseInt(portal.maxFileSize)}
+                    allowedFileTypes={portal.allowedFileTypes || undefined}
+                  />
+                ) : (
+                  <>
+                    <PortalFileList
+                      files={files}
+                      onRemove={removeFile}
+                      onAddMore={() => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.multiple = true;
+                        input.onchange = (e) => {
+                          const target = e.target as HTMLInputElement;
+                          if (target.files) addFiles(target.files);
+                        };
+                        input.click();
+                      }}
+                      primaryColor={portal.primaryColor}
+                      secondaryColor={portal.secondaryColor}
+                      textColor={portal.textColor}
+                      gradientEnabled={portal.gradientEnabled}
+                      uploading={uploading}
+                    />
+
+                    {!uploading && (
+                      <PortalButton
+                        primaryColor={portal.primaryColor}
+                        secondaryColor={portal.secondaryColor}
+                        gradientEnabled={portal.gradientEnabled}
+                        onClick={handleUpload}
+                        icon={<Upload className="w-4 h-4" />}
+                      >
+                        {portal.submitButtonText}
+                      </PortalButton>
+                    )}
+                  </>
                 )}
 
                 {/* Error Message */}
                 {uploadStatus === "error" && errorMessage && (
-                  <div className="mb-8 p-6 rounded-2xl border border-red-100 bg-red-50/50">
-                    <p className="text-red-600 text-sm font-bold flex items-center gap-2">
+                  <div className="p-4 rounded-xl border border-red-200 bg-red-50">
+                    <p className="text-red-600 text-sm font-semibold flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" /> {errorMessage}
                     </p>
                   </div>
                 )}
-
-                {/* Upload Button */}
-                <Button
-                  className="w-full py-8 bg-[#1c1917] text-stone-50 rounded-2xl font-bold text-lg hover:bg-stone-800 transition-all premium-shadow disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={
-                    files.length === 0 ||
-                    uploading ||
-                    (portal.requireClientName && !uploaderName.trim()) ||
-                    (portal.requireClientEmail && !uploaderEmail.trim())
-                  }
-                  style={{ backgroundColor: portal.primaryColor }}
-                  onClick={handleUpload}
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin mr-3" />
-                      UPLOADING...
-                    </>
-                  ) : (
-                    portal.submitButtonText || "UPLOAD FILES"
-                  )}
-                </Button>
               </div>
             </div>
           )}
 
           {/* Security Notice */}
           <div
-            className="mt-12 p-6 rounded-3xl border border-stone-100 bg-white/50 premium-shadow-sm text-center"
-            style={{
-              borderColor: portal.primaryColor + "20",
-            }}
+            className="mt-8 p-4 rounded-2xl border bg-white/50 text-center shadow-sm"
+            style={{ borderColor: `${portal.primaryColor}20` }}
           >
-            <p
-              className="text-sm font-medium text-stone-500 flex items-center justify-center gap-2"
-              style={{ color: portal.textColor }}
-            >
-              <Lock className="w-4 h-4" /> Your files are encrypted and securely
-              stored. We take your privacy seriously.
+            <p className="text-sm flex items-center justify-center gap-2" style={{ color: portal.textColor }}>
+              <Lock className="w-4 h-4" /> Your files are encrypted and securely stored
             </p>
           </div>
         </div>
       </main>
 
-      <footer className="border-t border-stone-200 py-12 px-4 md:px-8 lg:px-16 bg-[#fafaf9]">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2 opacity-50 grayscale">
-            <div className="w-8 h-8 bg-[#1c1917] flex items-center justify-center rounded-lg">
-              <span className="text-stone-50 font-bold text-sm">D</span>
-            </div>
-            <span className="serif-font font-bold text-[#1c1917]">
-              dysumcorp
-            </span>
-          </div>
-          <span className="text-sm font-medium text-stone-400 italic">
-            Powered by Dysumcorp. Securely collect files.
-          </span>
+      {/* Footer */}
+      <footer className="w-full py-5 px-6 border-t border-slate-200 bg-white flex flex-col items-center gap-1">
+        <div className="flex items-center gap-1">
+          <span className="text-slate-400 text-xs">Secure file delivery powered by</span>
+          <span className="text-slate-700 text-xs ml-1 font-bold">Dysumcorp</span>
         </div>
+        <span className="text-slate-300 text-xs">© 2026 Dysumcorp · All rights reserved.</span>
       </footer>
     </div>
   );

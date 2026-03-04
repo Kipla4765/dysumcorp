@@ -96,9 +96,11 @@ export async function PATCH(
       customDomain,
       whiteLabeled,
       primaryColor,
+      secondaryColor,
       textColor,
       backgroundColor,
       cardBackgroundColor,
+      gradientEnabled,
       logoUrl,
       storageProvider,
       storageFolderId,
@@ -140,11 +142,13 @@ export async function PATCH(
 
     // Branding
     if (primaryColor !== undefined) updateData.primaryColor = primaryColor;
+    if (secondaryColor !== undefined) updateData.secondaryColor = secondaryColor;
     if (textColor !== undefined) updateData.textColor = textColor;
     if (backgroundColor !== undefined)
       updateData.backgroundColor = backgroundColor;
     if (cardBackgroundColor !== undefined)
       updateData.cardBackgroundColor = cardBackgroundColor;
+    if (gradientEnabled !== undefined) updateData.gradientEnabled = gradientEnabled;
     if (logoUrl !== undefined) updateData.logoUrl = logoUrl || null;
     if (customDomain !== undefined)
       updateData.customDomain = customDomain || null;

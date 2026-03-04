@@ -25,10 +25,7 @@ const prismaClient = new PrismaClient({
 });
 
 export const auth = betterAuth({
-  database: {
-    provider: "postgres",
-    url: process.env.DATABASE_URL!,
-  },
+  database: prismaClient,
   emailAndPassword: {
     enabled: false,
   },

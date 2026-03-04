@@ -108,10 +108,12 @@ model Portal {
   whiteLabeled        Boolean  @default(false)
   isActive            Boolean  @default(true)
   userId              String
-  primaryColor        String   @default("#3b82f6")
-  textColor           String   @default("#0f172a")
-  backgroundColor     String   @default("#ffffff")
+  primaryColor        String   @default("#6366f1")
+  secondaryColor      String   @default("#8b5cf6")
+  textColor           String   @default("#1e293b")
+  backgroundColor     String   @default("#f1f5f9")
   cardBackgroundColor String   @default("#ffffff")
+  gradientEnabled     Boolean  @default(true)
   logoUrl             String?
   storageProvider     String?
   storageFolderId     String?

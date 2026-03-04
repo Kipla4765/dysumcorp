@@ -43,9 +43,11 @@ export async function POST(request: Request) {
       whiteLabeled,
       // Branding
       primaryColor,
+      secondaryColor,
       textColor,
       backgroundColor,
       cardBackgroundColor,
+      gradientEnabled,
       logoUrl,
       // Storage
       storageProvider,
@@ -169,10 +171,12 @@ export async function POST(request: Request) {
         whiteLabeled: whiteLabeled || false,
         userId,
         // Branding
-        primaryColor: primaryColor || "#3b82f6",
-        textColor: textColor || "#0f172a",
-        backgroundColor: backgroundColor || "#ffffff",
+        primaryColor: primaryColor || "#6366f1",
+        secondaryColor: secondaryColor || "#8b5cf6",
+        textColor: textColor || "#1e293b",
+        backgroundColor: backgroundColor || "#f1f5f9",
         cardBackgroundColor: cardBackgroundColor || "#ffffff",
+        gradientEnabled: gradientEnabled !== undefined ? gradientEnabled : true,
         logoUrl: logoUrl || user?.portalLogo || null,
         // Storage
         storageProvider: storageProvider || null,

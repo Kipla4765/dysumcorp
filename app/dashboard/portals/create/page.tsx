@@ -1066,10 +1066,12 @@ export default function CreatePortalPage() {
     portalUrl: "",
 
     // Branding
-    primaryColor: "#3b82f6",
-    textColor: "#0f172a",
-    backgroundColor: "#ffffff",
+    primaryColor: "#6366f1",
+    secondaryColor: "#8b5cf6",
+    textColor: "#1e293b",
+    backgroundColor: "#f1f5f9",
     cardBackgroundColor: "#ffffff",
+    gradientEnabled: true,
     logo: null as File | null,
 
     // Storage
@@ -2027,6 +2029,74 @@ export default function CreatePortalPage() {
                                 />
                               </div>
                             </div>
+
+                            {/* Secondary Color */}
+                            <div>
+                              <label className="block text-sm font-semibold text-foreground mb-2">
+                                Secondary Color
+                              </label>
+                              <div className="flex gap-2">
+                                <div className="relative group">
+                                  <div
+                                    className="w-12 h-12 rounded-xl border-2 border-border cursor-pointer transition-all hover:scale-105"
+                                    style={{
+                                      backgroundColor: formData.secondaryColor,
+                                    }}
+                                    onClick={() =>
+                                      document
+                                        .getElementById("secondaryColorInput")
+                                        ?.click()
+                                    }
+                                  />
+                                  <input
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    id="secondaryColorInput"
+                                    type="color"
+                                    value={formData.secondaryColor}
+                                    onChange={(e) =>
+                                      updateFormData(
+                                        "secondaryColor",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
+                                </div>
+                                <input
+                                  className="flex-1 px-4 py-3 bg-muted border border-border rounded-xl focus:bg-card focus:ring-2 focus:ring-ring transition-all outline-none font-medium text-foreground"
+                                  type="text"
+                                  value={formData.secondaryColor}
+                                  onChange={(e) =>
+                                    updateFormData(
+                                      "secondaryColor",
+                                      e.target.value,
+                                    )
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Gradient Toggle */}
+                          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                            <div>
+                              <label className="block text-sm font-semibold text-foreground">
+                                Enable Gradient Buttons
+                              </label>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Use gradient from primary to secondary color for buttons
+                              </p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={formData.gradientEnabled}
+                                onChange={(e) =>
+                                  updateFormData("gradientEnabled", e.target.checked)
+                                }
+                              />
+                              <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
                           </div>
                         </div>
 

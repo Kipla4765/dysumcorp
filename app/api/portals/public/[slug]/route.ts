@@ -20,9 +20,11 @@ export async function GET(
         isActive: true,
         // Branding
         primaryColor: true,
+        secondaryColor: true,
         textColor: true,
         backgroundColor: true,
         cardBackgroundColor: true,
+        gradientEnabled: true,
         logoUrl: true,
         // Storage
         storageProvider: true,
