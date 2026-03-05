@@ -246,29 +246,40 @@ export default function PublicPortalPage() {
     
     if (validFiles.length === 0) {
       setErrorMessage("Please select at least one valid file");
+      setUploadStatus("error");
       return;
     }
 
     if (!portal) {
       setErrorMessage("Portal information not loaded");
+      setUploadStatus("error");
       return;
     }
 
     if (portal.requireClientName && !uploaderName.trim()) {
       setErrorMessage("Please enter your name");
+      setUploadStatus("error");
       return;
     }
 
     if (portal.requireClientEmail) {
       if (!uploaderEmail.trim()) {
         setErrorMessage("Please enter your email");
+        setUploadStatus("error");
         return;
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(uploaderEmail)) {
         setErrorMessage("Please enter a valid email address");
+        setUploadStatus("error");
         return;
       }
+    }
+
+    if (portal.textboxSectionEnabled && portal.textboxSectionRequired && !textboxValue.trim()) {
+      setErrorMessage(`Please fill in the ${portal.textboxSectionTitle || "Notes"} field`);
+      setUploadStatus("error");
+      return;
     }
 
     setUploading(true);
@@ -825,7 +836,7 @@ export default function PublicPortalPage() {
                 )}
 
                 {/* Error Message */}
-                {uploadStatus === "error" && errorMessage && (
+                {errorMessage && (uploadStatus === "error" || uploadStatus === "idle") && (
                   <div className="p-4 rounded-xl border border-red-200 bg-red-50">
                     <p className="text-red-600 text-sm font-semibold flex items-center gap-2">
                       <AlertCircle className="w-4 h-4" /> {errorMessage}
