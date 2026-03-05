@@ -49,6 +49,8 @@ export async function POST(request: Request) {
       cardBackgroundColor,
       gradientEnabled,
       logoUrl,
+      companyWebsite,
+      companyEmail,
       // Storage
       storageProvider,
       storageFolderId,
@@ -62,6 +64,9 @@ export async function POST(request: Request) {
       allowedFileTypes,
       // Messaging
       welcomeMessage,
+      welcomeToastMessage,
+      welcomeToastDelay,
+      welcomeToastDuration,
       submitButtonText,
       successMessage,
     } = body;
@@ -178,6 +183,8 @@ export async function POST(request: Request) {
         cardBackgroundColor: cardBackgroundColor || "#ffffff",
         gradientEnabled: gradientEnabled !== undefined ? gradientEnabled : true,
         logoUrl: logoUrl || user?.portalLogo || null,
+        companyWebsite: companyWebsite || null,
+        companyEmail: companyEmail || null,
         // Storage
         storageProvider: storageProvider || null,
         storageFolderId: storageFolderId || null,
@@ -192,6 +199,9 @@ export async function POST(request: Request) {
         allowedFileTypes: allowedFileTypes || [],
         // Messaging
         welcomeMessage: welcomeMessage || null,
+        welcomeToastMessage: welcomeToastMessage || null,
+        welcomeToastDelay: welcomeToastDelay !== undefined ? welcomeToastDelay : 1000,
+        welcomeToastDuration: welcomeToastDuration !== undefined ? welcomeToastDuration : 3000,
         submitButtonText: submitButtonText || "Initialize Transfer",
         successMessage: successMessage || "Transmission Verified",
       },

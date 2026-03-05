@@ -1073,6 +1073,8 @@ export default function CreatePortalPage() {
     cardBackgroundColor: "#ffffff",
     gradientEnabled: true,
     logo: null as File | null,
+    companyWebsite: "",
+    companyEmail: "",
 
     // Storage
     storageProvider: "google_drive" as "google_drive" | "dropbox",
@@ -1096,7 +1098,10 @@ export default function CreatePortalPage() {
     ] as string[], // Default: All file types
 
     // Messaging
-    welcomeMessage: "",
+    welcomeMessage: "Send us your files securely — we'll take it from here.\nFill in your details and attach the files you'd like to share with our team. All uploads are encrypted and handled with care.",
+    welcomeToastMessage: "👋 Welcome! Please fill in your details and upload your files.",
+    welcomeToastDelay: 1000,
+    welcomeToastDuration: 3000,
     submitButtonText: "Initialize Transfer",
     successMessage: "Transmission Verified",
     textboxSectionEnabled: false,
@@ -1487,10 +1492,14 @@ export default function CreatePortalPage() {
 
           // Branding
           primaryColor: formData.primaryColor,
+          secondaryColor: formData.secondaryColor,
           textColor: formData.textColor,
           backgroundColor: formData.backgroundColor,
           cardBackgroundColor: formData.cardBackgroundColor,
+          gradientEnabled: formData.gradientEnabled,
           logoUrl: logoUrl,
+          companyWebsite: formData.companyWebsite || null,
+          companyEmail: formData.companyEmail || null,
 
           // Storage
           storageProvider: formData.storageProvider,
@@ -1507,6 +1516,9 @@ export default function CreatePortalPage() {
 
           // Messaging
           welcomeMessage: formData.welcomeMessage || null,
+          welcomeToastMessage: formData.welcomeToastMessage || null,
+          welcomeToastDelay: formData.welcomeToastDelay,
+          welcomeToastDuration: formData.welcomeToastDuration,
           submitButtonText: formData.submitButtonText,
           successMessage: formData.successMessage,
           textboxSectionEnabled: formData.textboxSectionEnabled,
@@ -1847,6 +1859,51 @@ export default function CreatePortalPage() {
 
                         <div className="space-y-4">
                           <h3 className="text-sm font-semibold text-foreground">
+                            Company Details
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Company Website */}
+                            <div>
+                              <label className="block text-sm font-semibold text-foreground mb-2">
+                                Website
+                              </label>
+                              <input
+                                className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:bg-card focus:ring-2 focus:ring-ring transition-all outline-none font-medium text-foreground"
+                                placeholder="mycompany.studio"
+                                type="text"
+                                value={formData.companyWebsite}
+                                onChange={(e) =>
+                                  updateFormData("companyWebsite", e.target.value)
+                                }
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Displayed in portal header
+                              </p>
+                            </div>
+
+                            {/* Company Email */}
+                            <div>
+                              <label className="block text-sm font-semibold text-foreground mb-2">
+                                Contact Email
+                              </label>
+                              <input
+                                className="w-full px-4 py-3 bg-muted border border-border rounded-xl focus:bg-card focus:ring-2 focus:ring-ring transition-all outline-none font-medium text-foreground"
+                                placeholder="hello@mycompany.studio"
+                                type="email"
+                                value={formData.companyEmail}
+                                onChange={(e) =>
+                                  updateFormData("companyEmail", e.target.value)
+                                }
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Displayed in portal header
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-semibold text-foreground">
                             Colors
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2158,6 +2215,74 @@ export default function CreatePortalPage() {
                               updateFormData("welcomeMessage", e.target.value)
                             }
                           />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Displayed in the portal header. Use line breaks for title and description.
+                          </p>
+                        </div>
+
+                        <div className="border border-border rounded-xl p-6 bg-muted/30">
+                          <h3 className="text-sm font-semibold text-foreground mb-4">
+                            Welcome Toast Notification
+                          </h3>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-foreground mb-2">
+                                Toast Message
+                              </label>
+                              <input
+                                className="w-full px-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-ring transition-all outline-none font-medium text-foreground"
+                                type="text"
+                                placeholder="👋 Welcome! Please fill in your details and upload your files."
+                                value={formData.welcomeToastMessage}
+                                onChange={(e) =>
+                                  updateFormData("welcomeToastMessage", e.target.value)
+                                }
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Popup notification shown when visitors enter the portal
+                              </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-semibold text-foreground mb-2">
+                                  Delay (ms)
+                                </label>
+                                <input
+                                  className="w-full px-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-ring transition-all outline-none font-medium text-foreground"
+                                  type="number"
+                                  min="0"
+                                  step="100"
+                                  value={formData.welcomeToastDelay}
+                                  onChange={(e) =>
+                                    updateFormData("welcomeToastDelay", parseInt(e.target.value) || 0)
+                                  }
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Time before toast appears (1000ms = 1 second)
+                                </p>
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-semibold text-foreground mb-2">
+                                  Duration (ms)
+                                </label>
+                                <input
+                                  className="w-full px-4 py-3 bg-card border border-border rounded-xl focus:ring-2 focus:ring-ring transition-all outline-none font-medium text-foreground"
+                                  type="number"
+                                  min="1000"
+                                  step="100"
+                                  value={formData.welcomeToastDuration}
+                                  onChange={(e) =>
+                                    updateFormData("welcomeToastDuration", parseInt(e.target.value) || 3000)
+                                  }
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  How long toast stays visible
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

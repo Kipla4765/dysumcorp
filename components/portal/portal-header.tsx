@@ -3,43 +3,47 @@ import { Building2 } from "lucide-react";
 interface PortalHeaderProps {
   name: string;
   logoUrl?: string | null;
+  companyWebsite?: string | null;
+  companyEmail?: string | null;
   welcomeMessage?: string | null;
   primaryColor: string;
   secondaryColor?: string;
   textColor: string;
   gradientEnabled?: boolean;
-  contactInfo?: {
-    domain?: string;
-    email?: string;
-  };
 }
 
 export function PortalHeader({
   name,
   logoUrl,
+  companyWebsite,
+  companyEmail,
   welcomeMessage,
   primaryColor,
   secondaryColor,
   textColor,
   gradientEnabled = true,
-  contactInfo,
 }: PortalHeaderProps) {
   const gradientStyle = gradientEnabled && secondaryColor
     ? { background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }
     : { backgroundColor: primaryColor };
 
+  // Split welcome message into title and description
+  const messageParts = welcomeMessage?.split('\n').filter(line => line.trim()) || [];
+  const messageTitle = messageParts[0] || "";
+  const messageDescription = messageParts.slice(1).join(' ') || "";
+
   return (
     <header className="w-full border-b border-slate-200 bg-white">
       <div className="px-6 pt-5 pb-4 flex items-center gap-4">
         <div
-          className="flex items-center justify-center w-12 h-12 rounded-2xl shrink-0"
-          style={gradientStyle}
+          className="flex items-center justify-center w-12 h-12 rounded-2xl shrink-0 overflow-hidden"
+          style={logoUrl ? {} : gradientStyle}
         >
           {logoUrl ? (
             <img
               src={logoUrl}
               alt={name}
-              className="w-8 h-8 object-contain"
+              className="w-full h-full object-contain"
             />
           ) : (
             <Building2 className="w-6 h-6 text-white" />
@@ -52,20 +56,27 @@ export function PortalHeader({
           >
             {name}
           </h2>
-          {contactInfo && (contactInfo.domain || contactInfo.email) && (
+          {(companyWebsite || companyEmail) && (
             <p className="text-sm font-medium mt-0.5" style={{ color: primaryColor }}>
-              {contactInfo.domain && contactInfo.domain}
-              {contactInfo.domain && contactInfo.email && " · "}
-              {contactInfo.email && contactInfo.email}
+              {companyWebsite && <span>{companyWebsite}</span>}
+              {companyWebsite && companyEmail && <span className="mx-1">·</span>}
+              {companyEmail && <span>{companyEmail}</span>}
             </p>
           )}
         </div>
       </div>
       {welcomeMessage && (
         <div className="px-6 pb-5 border-t border-slate-100 bg-slate-50">
-          <p className="text-base font-medium pt-4" style={{ color: textColor }}>
-            {welcomeMessage}
-          </p>
+          {messageTitle && (
+            <p className="text-base font-medium pt-4" style={{ color: textColor }}>
+              {messageTitle}
+            </p>
+          )}
+          {messageDescription && (
+            <p className="text-slate-500 text-sm mt-1">
+              {messageDescription}
+            </p>
+          )}
         </div>
       )}
     </header>
