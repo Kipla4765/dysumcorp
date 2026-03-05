@@ -23,13 +23,17 @@ function parseAllowedFileTypes(allowedFileTypes: string[]): Set<string> {
 
         if (prefix === "image") {
           allowedMimeTypes.add("image/jpeg");
+          allowedMimeTypes.add("image/jpg");
           allowedMimeTypes.add("image/png");
           allowedMimeTypes.add("image/gif");
           allowedMimeTypes.add("image/webp");
           allowedMimeTypes.add("image/svg+xml");
           allowedMimeTypes.add("image/bmp");
+          allowedMimeTypes.add("image/x-ms-bmp");
           allowedMimeTypes.add("image/tiff");
-          allowedMimeTypes.add("image/webp");
+          allowedMimeTypes.add("image/x-tiff");
+          allowedMimeTypes.add("image/heic");
+          allowedMimeTypes.add("image/heif");
         } else if (prefix === "video") {
           allowedMimeTypes.add("video/mp4");
           allowedMimeTypes.add("video/webm");
@@ -37,14 +41,26 @@ function parseAllowedFileTypes(allowedFileTypes: string[]): Set<string> {
           allowedMimeTypes.add("video/mpeg");
           allowedMimeTypes.add("video/quicktime");
           allowedMimeTypes.add("video/x-msvideo");
+          allowedMimeTypes.add("video/x-matroska");
+          allowedMimeTypes.add("video/avi");
+          allowedMimeTypes.add("video/x-flv");
+          allowedMimeTypes.add("video/3gpp");
+          allowedMimeTypes.add("video/3gpp2");
         } else if (prefix === "audio") {
           allowedMimeTypes.add("audio/mpeg");
           allowedMimeTypes.add("audio/mp3");
+          allowedMimeTypes.add("audio/mp4");
+          allowedMimeTypes.add("audio/x-m4a");
+          allowedMimeTypes.add("audio/m4a");
           allowedMimeTypes.add("audio/wav");
           allowedMimeTypes.add("audio/ogg");
           allowedMimeTypes.add("audio/webm");
           allowedMimeTypes.add("audio/aac");
+          allowedMimeTypes.add("audio/x-aac");
+          allowedMimeTypes.add("audio/flac");
+          allowedMimeTypes.add("audio/x-flac");
           allowedMimeTypes.add("audio/midi");
+          allowedMimeTypes.add("audio/x-midi");
         } else if (prefix === "text") {
           allowedMimeTypes.add("text/plain");
           allowedMimeTypes.add("text/csv");
