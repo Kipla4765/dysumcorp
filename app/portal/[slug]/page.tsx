@@ -82,6 +82,7 @@ export default function PublicPortalPage() {
   const [textboxValue, setTextboxValue] = useState("");
   const [uploadSessionId, setUploadSessionId] = useState<string | null>(null);
   const [sentFiles, setSentFiles] = useState<Array<{ name: string; size: number; type: string }>>([]);
+  const [lastUploaderInfo, setLastUploaderInfo] = useState<{ name: string; email: string; notes: string } | null>(null);
 
   useEffect(() => {
     fetchPortal();
@@ -286,7 +287,24 @@ export default function PublicPortalPage() {
     setUploading(true);
     setUploadStatus("idle");
     setErrorMessage("");
-    setUploadSessionId(null); // Reset session ID for new upload
+    
+    // Check if user info has changed - if so, reset session
+    const currentInfo = {
+      name: uploaderName.trim(),
+      email: uploaderEmail.trim(),
+      notes: textboxValue.trim(),
+    };
+    
+    if (lastUploaderInfo && (
+      lastUploaderInfo.name !== currentInfo.name ||
+      lastUploaderInfo.email !== currentInfo.email ||
+      lastUploaderInfo.notes !== currentInfo.notes
+    )) {
+      // User info changed, start new session
+      setUploadSessionId(null);
+    }
+    
+    setLastUploaderInfo(currentInfo);
 
     const successfulFiles: Array<{ name: string; size: number; type: string }> = [];
     let allCompleted = false;
@@ -610,6 +628,8 @@ export default function PublicPortalPage() {
     setFiles([]);
     setCompletedFiles([]);
     setSentFiles([]);
+    // Keep uploadSessionId to continue adding to the same session
+    // It will only be reset if user changes their info
   };
 
   if (loading) {

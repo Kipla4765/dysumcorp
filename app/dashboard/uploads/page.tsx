@@ -168,21 +168,38 @@ export default function UploadsPage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-
-    if (hours < 1) return "Just now";
-    if (hours < 24) return `${hours} hours ago`;
-    if (hours < 48) return "Yesterday";
-
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const getDayCategory = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Reset time to midnight for comparison
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const yesterdayOnly = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+
+    if (dateOnly.getTime() === todayOnly.getTime()) {
+      return "Today";
+    } else if (dateOnly.getTime() === yesterdayOnly.getTime()) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
   };
 
   const handleUploadClick = (upload: UploadGroup) => {
@@ -289,6 +306,28 @@ export default function UploadsPage() {
       u.portalName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Group uploads by day
+  const uploadsByDay = filteredUploads.reduce((acc, upload) => {
+    const dayCategory = getDayCategory(upload.uploadedAt);
+    if (!acc[dayCategory]) {
+      acc[dayCategory] = [];
+    }
+    acc[dayCategory].push(upload);
+    return acc;
+  }, {} as Record<string, UploadGroup[]>);
+
+  // Sort day categories (Today first, then Yesterday, then chronological)
+  const sortedDays = Object.keys(uploadsByDay).sort((a, b) => {
+    if (a === "Today") return -1;
+    if (b === "Today") return 1;
+    if (a === "Yesterday") return -1;
+    if (b === "Yesterday") return 1;
+    // For other days, sort by the first upload's date in each category
+    const dateA = new Date(uploadsByDay[a][0].uploadedAt);
+    const dateB = new Date(uploadsByDay[b][0].uploadedAt);
+    return dateB.getTime() - dateA.getTime();
+  });
+
   if (isPending || loading) {
     return (
       <div className="w-full overflow-hidden">
@@ -344,60 +383,72 @@ export default function UploadsPage() {
           </div>
 
           <div className="p-0">
-            <div className="divide-y divide-border">
-              {filteredUploads.length > 0 ? (
-                filteredUploads.map((upload, idx) => (
-                  <button
-                    key={idx}
-                    className="w-full flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-5 text-left hover:bg-muted/50 transition-colors group"
-                    onClick={() => handleUploadClick(upload)}
-                  >
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground group-hover:bg-bg-card transition-colors flex-shrink-0">
-                      <Upload className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-foreground truncate text-sm sm:text-base">
-                          {upload.uploaderName}
-                        </span>
-                        {upload.uploaderNotes && (
-                          <span className="bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded flex items-center gap-1">
-                            <MessageSquare className="w-3 h-3" />
-                            Notes
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                        {upload.uploaderEmail || "No email provided"} • {upload.portalName}
-                      </p>
-                    </div>
-                    <div className="flex sm:flex-col items-start sm:items-end gap-1 sm:gap-1 sm:px-4">
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>{upload.totalFiles} file{upload.totalFiles !== 1 ? 's' : ''}</span>
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        {formatDate(upload.uploadedAt)}
-                      </div>
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="text-center py-12 sm:py-20 px-4 sm:px-6">
-                  <div className="p-3 sm:p-4 bg-muted rounded-full w-fit mx-auto mb-4">
-                    <Upload className="w-6 sm:w-8 h-6 sm:w-8 text-muted-foreground" />
+            {filteredUploads.length > 0 ? (
+              sortedDays.map((dayCategory) => (
+                <div key={dayCategory}>
+                  {/* Day Category Header */}
+                  <div className="px-4 sm:px-6 py-2 bg-muted/50 border-b border-border">
+                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                      {dayCategory}
+                    </h3>
                   </div>
-                  <h4 className="text-foreground font-semibold mb-1">
-                    {searchQuery ? "No uploads found" : "No uploads yet"}
-                  </h4>
-                  <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-                    {searchQuery
-                      ? "We couldn't find any uploads matching your search."
-                      : "Uploads will appear here when clients upload files to your portals."}
-                  </p>
+                  
+                  {/* Uploads for this day */}
+                  <div className="divide-y divide-border">
+                    {uploadsByDay[dayCategory].map((upload) => (
+                      <button
+                        key={upload.id}
+                        className="w-full flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-5 text-left hover:bg-muted/50 transition-colors group"
+                        onClick={() => handleUploadClick(upload)}
+                      >
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground group-hover:bg-bg-card transition-colors flex-shrink-0">
+                          <Upload className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-bold text-foreground truncate text-sm sm:text-base">
+                              {upload.uploaderName}
+                            </span>
+                            {upload.uploaderNotes && (
+                              <span className="bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded flex items-center gap-1">
+                                <MessageSquare className="w-3 h-3" />
+                                Notes
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                            {upload.uploaderEmail || "No email provided"} • {upload.portalName}
+                          </p>
+                        </div>
+                        <div className="flex sm:flex-col items-start sm:items-end gap-1 sm:gap-1 sm:px-4">
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>{upload.totalFiles} file{upload.totalFiles !== 1 ? 's' : ''}</span>
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {formatDate(upload.uploadedAt)}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </div>
+              ))
+            ) : (
+              <div className="text-center py-12 sm:py-20 px-4 sm:px-6">
+                <div className="p-3 sm:p-4 bg-muted rounded-full w-fit mx-auto mb-4">
+                  <Upload className="w-6 sm:w-8 h-6 sm:w-8 text-muted-foreground" />
+                </div>
+                <h4 className="text-foreground font-semibold mb-1">
+                  {searchQuery ? "No uploads found" : "No uploads yet"}
+                </h4>
+                <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+                  {searchQuery
+                    ? "We couldn't find any uploads matching your search."
+                    : "Uploads will appear here when clients upload files to your portals."}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
