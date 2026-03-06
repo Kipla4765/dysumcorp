@@ -330,6 +330,14 @@ export async function POST(request: NextRequest) {
 
     if (provider === "google") {
       // Create Google Drive resumable upload session
+      console.log("[Portal Direct Upload] Creating Google Drive session:", {
+        fileName,
+        fileSize,
+        parentFolderId,
+        hasAccessToken: !!accessToken,
+        tokenLength: accessToken?.length
+      });
+      
       const response = await fetch(
         "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable",
         {
@@ -350,8 +358,15 @@ export async function POST(request: NextRequest) {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("[Portal Direct Upload] Google Drive session creation failed:", errorText);
-        throw new Error("Failed to create Google Drive upload session");
+        console.error("[Portal Direct Upload] Google Drive session creation failed:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+          fileName,
+          fileSize,
+          parentFolderId
+        });
+        throw new Error(`Failed to create Google Drive upload session: ${response.status} ${errorText}`);
       }
 
       const uploadUrl = response.headers.get("Location");
