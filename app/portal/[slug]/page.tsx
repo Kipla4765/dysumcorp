@@ -308,6 +308,34 @@ export default function PublicPortalPage() {
     
     setLastUploaderInfo(currentInfo);
 
+    // Create upload session BEFORE starting any file uploads to ensure all files use the same session
+    if (!uploadSessionIdRef.current) {
+      try {
+        const sessionResponse = await fetch("/api/portals/create-upload-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            portalId: portal.id,
+            uploaderName: uploaderName.trim(),
+            uploaderEmail: uploaderEmail.trim(),
+            uploaderNotes: textboxValue.trim() || null,
+          }),
+        });
+
+        if (sessionResponse.ok) {
+          const sessionData = await sessionResponse.json();
+          uploadSessionIdRef.current = sessionData.uploadSessionId;
+          setUploadSessionId(sessionData.uploadSessionId);
+          console.log("[Upload] Created upload session:", sessionData.uploadSessionId);
+        } else {
+          console.error("[Upload] Failed to create upload session, will create on first file");
+        }
+      } catch (error) {
+        console.error("[Upload] Error creating upload session:", error);
+        // Continue anyway, session will be created with first file
+      }
+    }
+
     const successfulFiles: Array<{ name: string; size: number; type: string }> = [];
     let allCompleted = false;
 
@@ -528,7 +556,7 @@ export default function PublicPortalPage() {
               uploaderName: uploaderName.trim(),
               uploaderEmail: uploaderEmail.trim(),
               uploaderNotes: textboxValue.trim() || null,
-              uploadSessionId: uploadSessionIdRef.current, // Use ref for immediate access
+              uploadSessionId: uploadSessionIdRef.current, // Use pre-created session ID
             }),
           });
 
@@ -539,7 +567,7 @@ export default function PublicPortalPage() {
 
           const confirmData = await confirmResponse.json();
           
-          // Store session ID for subsequent files in this upload (use ref to avoid race conditions)
+          // Store session ID if it was created by the backend (fallback)
           if (confirmData.uploadSessionId && !uploadSessionIdRef.current) {
             uploadSessionIdRef.current = confirmData.uploadSessionId;
             setUploadSessionId(confirmData.uploadSessionId);
