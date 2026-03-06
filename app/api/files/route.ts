@@ -30,6 +30,17 @@ export async function GET(request: Request) {
             slug: true,
           },
         },
+        uploadSession: {
+          select: {
+            id: true,
+            uploaderName: true,
+            uploaderEmail: true,
+            uploaderNotes: true,
+            uploadedAt: true,
+            fileCount: true,
+            totalSize: true,
+          },
+        },
       },
       orderBy: { uploadedAt: "desc" },
       take,
@@ -39,6 +50,10 @@ export async function GET(request: Request) {
       files: files.map((f: any) => ({
         ...f,
         size: f.size.toString(), // Convert BigInt to string for JSON
+        uploadSession: f.uploadSession ? {
+          ...f.uploadSession,
+          totalSize: f.uploadSession.totalSize.toString(),
+        } : null,
       })),
     });
   } catch (error) {

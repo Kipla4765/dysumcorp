@@ -80,6 +80,7 @@ export default function PublicPortalPage() {
   const [uploaderEmail, setUploaderEmail] = useState("");
   const [portalPassword, setPortalPassword] = useState("");
   const [textboxValue, setTextboxValue] = useState("");
+  const [uploadSessionId, setUploadSessionId] = useState<string | null>(null);
   const [sentFiles, setSentFiles] = useState<Array<{ name: string; size: number; type: string }>>([]);
 
   useEffect(() => {
@@ -285,6 +286,7 @@ export default function PublicPortalPage() {
     setUploading(true);
     setUploadStatus("idle");
     setErrorMessage("");
+    setUploadSessionId(null); // Reset session ID for new upload
 
     const successfulFiles: Array<{ name: string; size: number; type: string }> = [];
     let allCompleted = false;
@@ -505,12 +507,21 @@ export default function PublicPortalPage() {
               provider: uploadData.provider,
               uploaderName: uploaderName.trim(),
               uploaderEmail: uploaderEmail.trim(),
+              uploaderNotes: textboxValue.trim() || null,
+              uploadSessionId: uploadSessionId, // Include session ID for grouping
             }),
           });
 
           if (!confirmResponse.ok) {
             const errorData = await confirmResponse.json();
             throw new Error(errorData.error || "Failed to confirm upload");
+          }
+
+          const confirmData = await confirmResponse.json();
+          
+          // Store session ID for subsequent files in this upload
+          if (confirmData.uploadSessionId && !uploadSessionId) {
+            setUploadSessionId(confirmData.uploadSessionId);
           }
 
           console.log(`[Upload] Upload confirmed for ${file.name}`);

@@ -23,6 +23,7 @@ import { useToast } from "@/lib/toast";
 import { useSession } from "@/lib/auth-client";
 
 interface UploadGroup {
+  id: string; // Upload session ID
   uploaderName: string;
   uploaderEmail: string;
   uploaderNotes: string | null;
@@ -46,12 +47,21 @@ interface FileItem {
   expiresAt?: string | null;
   uploaderEmail?: string | null;
   uploaderName?: string | null;
-  uploaderNotes?: string | null;
+  uploadSessionId?: string | null;
   portal: {
     id: string;
     name: string;
     slug: string;
   };
+  uploadSession?: {
+    id: string;
+    uploaderName: string | null;
+    uploaderEmail: string | null;
+    uploaderNotes: string | null;
+    uploadedAt: string;
+    fileCount: number;
+    totalSize: string;
+  } | null;
 }
 
 export default function UploadsPage() {
@@ -72,32 +82,51 @@ export default function UploadsPage() {
         const data = await response.json();
         const files = data.files || [];
 
-        // Group files by uploader and upload session (same timestamp + uploader)
+        // Group files by upload session
         const groupedMap = new Map<string, UploadGroup>();
 
         files.forEach((file: FileItem) => {
-          // Create a unique key for each upload session
-          const uploadDate = new Date(file.uploadedAt).toISOString().split('T')[0];
-          const uploadHour = new Date(file.uploadedAt).getHours();
-          const key = `${file.uploaderEmail || file.uploaderName || 'anonymous'}-${uploadDate}-${uploadHour}-${file.portal.id}`;
-
-          if (groupedMap.has(key)) {
-            const group = groupedMap.get(key)!;
+          // Use uploadSessionId if available, otherwise create a fallback key for legacy files
+          const sessionKey = file.uploadSessionId || `legacy-${file.uploaderEmail || file.uploaderName || 'anonymous'}-${file.uploadedAt}`;
+          
+          if (groupedMap.has(sessionKey)) {
+            const group = groupedMap.get(sessionKey)!;
             group.files.push(file);
-            group.totalFiles++;
-            group.totalSize = (BigInt(group.totalSize) + BigInt(file.size)).toString();
+            // Don't increment counts for session-based groups (already accurate from DB)
+            if (!file.uploadSessionId) {
+              group.totalFiles++;
+              group.totalSize = (BigInt(group.totalSize) + BigInt(file.size)).toString();
+            }
           } else {
-            groupedMap.set(key, {
-              uploaderName: file.uploaderName || "Anonymous",
-              uploaderEmail: file.uploaderEmail || "",
-              uploaderNotes: file.uploaderNotes || null,
-              totalFiles: 1,
-              totalSize: file.size,
-              uploadedAt: file.uploadedAt,
-              portalName: file.portal.name,
-              portalSlug: file.portal.slug,
-              files: [file],
-            });
+            // Create new group from upload session data or file data
+            if (file.uploadSession) {
+              groupedMap.set(sessionKey, {
+                id: file.uploadSession.id,
+                uploaderName: file.uploadSession.uploaderName || "Anonymous",
+                uploaderEmail: file.uploadSession.uploaderEmail || "",
+                uploaderNotes: file.uploadSession.uploaderNotes || null,
+                totalFiles: file.uploadSession.fileCount,
+                totalSize: file.uploadSession.totalSize,
+                uploadedAt: file.uploadSession.uploadedAt,
+                portalName: file.portal.name,
+                portalSlug: file.portal.slug,
+                files: [file],
+              });
+            } else {
+              // Legacy file without session
+              groupedMap.set(sessionKey, {
+                id: sessionKey,
+                uploaderName: file.uploaderName || "Anonymous",
+                uploaderEmail: file.uploaderEmail || "",
+                uploaderNotes: null, // Legacy files don't have notes
+                totalFiles: 1,
+                totalSize: file.size,
+                uploadedAt: file.uploadedAt,
+                portalName: file.portal.name,
+                portalSlug: file.portal.slug,
+                files: [file],
+              });
+            }
           }
         });
 

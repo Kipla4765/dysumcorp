@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       uploaderNotes,
       password,
       uploadToken, // New: security token
+      uploadSessionId, // New: to group files from same upload
     } = body;
 
     console.log("[Portal Confirm Upload] Request:", {
@@ -129,6 +130,24 @@ export async function POST(request: NextRequest) {
       passwordHash = await hashPassword(password.trim());
     }
 
+    // Create or get upload session
+    let sessionId = uploadSessionId;
+    if (!sessionId) {
+      // Create new upload session
+      const session = await prisma.uploadSession.create({
+        data: {
+          portalId,
+          uploaderName: uploaderName || null,
+          uploaderEmail: uploaderEmail || null,
+          uploaderNotes: uploaderNotes || null,
+          fileCount: 0,
+          totalSize: BigInt(0),
+        },
+      });
+      sessionId = session.id;
+      console.log("[Portal Confirm Upload] Created new upload session:", sessionId);
+    }
+
     // Save file metadata to database
     console.log("[Portal Confirm Upload] Saving file metadata to database...");
     const file = await prisma.file.create({
@@ -139,10 +158,19 @@ export async function POST(request: NextRequest) {
         storageUrl: finalStorageUrl,
         storageFileId: storageFileId || null,
         portalId: portalId,
+        uploadSessionId: sessionId,
         passwordHash,
         uploaderName: uploaderName || null,
         uploaderEmail: uploaderEmail || null,
-        uploaderNotes: uploaderNotes || null,
+      },
+    });
+
+    // Update upload session stats
+    await prisma.uploadSession.update({
+      where: { id: sessionId },
+      data: {
+        fileCount: { increment: 1 },
+        totalSize: { increment: BigInt(fileSize) },
       },
     });
 
@@ -154,6 +182,7 @@ export async function POST(request: NextRequest) {
         ...file,
         size: file.size.toString(), // Convert BigInt to string for JSON
       },
+      uploadSessionId: sessionId, // Return session ID for subsequent files
       provider,
     });
   } catch (error) {

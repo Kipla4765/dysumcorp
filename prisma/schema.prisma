@@ -138,31 +138,52 @@ model Portal {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   files               File[]
+  uploadSessions      UploadSession[]
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("portal")
 }
 
-model File {
-  id            String    @id @default(cuid())
-  name          String
-  size          BigInt
-  mimeType      String
-  storageUrl    String
-  storageFileId String?
+model UploadSession {
+  id            String   @id @default(cuid())
   portalId      String
-  uploadedAt    DateTime  @default(now())
-  expiresAt     DateTime?
-  passwordHash  String?
-  downloads     Int       @default(0)
   uploaderName  String?
   uploaderEmail String?
   uploaderNotes String?
-  portal        Portal    @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  uploadedAt    DateTime @default(now())
+  fileCount     Int      @default(0)
+  totalSize     BigInt   @default(0)
+  portal        Portal   @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  files         File[]
 
   @@index([portalId])
   @@index([uploaderEmail])
+  @@index([uploadedAt])
+  @@map("upload_session")
+}
+
+model File {
+  id              String         @id @default(cuid())
+  name            String
+  size            BigInt
+  mimeType        String
+  storageUrl      String
+  storageFileId   String?
+  portalId        String
+  uploadSessionId String?
+  uploadedAt      DateTime       @default(now())
+  expiresAt       DateTime?
+  passwordHash    String?
+  downloads       Int            @default(0)
+  uploaderName    String?
+  uploaderEmail   String?
+  portal          Portal         @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  uploadSession   UploadSession? @relation(fields: [uploadSessionId], references: [id], onDelete: SetNull)
+
+  @@index([portalId])
+  @@index([uploaderEmail])
+  @@index([uploadSessionId])
   @@map("file")
 }
 
