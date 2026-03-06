@@ -2,34 +2,54 @@ import { NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+// Lazy initialization to avoid build-time errors
+let redis: Redis | null = null;
+let UPLOAD_LIMIT: Ratelimit | null = null;
+let DOWNLOAD_LIMIT: Ratelimit | null = null;
+let API_LIMIT: Ratelimit | null = null;
+let AUTH_LIMIT: Ratelimit | null = null;
 
-export const UPLOAD_LIMIT = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(50, "60 s"),
-  analytics: true,
-});
+function initializeRedis() {
+  if (redis !== null) return; // Already initialized
+  
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      redis = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      });
 
-export const DOWNLOAD_LIMIT = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(100, "60 s"),
-  analytics: true,
-});
+      UPLOAD_LIMIT = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(50, "60 s"),
+        analytics: true,
+      });
 
-export const API_LIMIT = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(1000, "60 s"),
-  analytics: true,
-});
+      DOWNLOAD_LIMIT = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(100, "60 s"),
+        analytics: true,
+      });
 
-export const AUTH_LIMIT = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(5, "60 s"),
-  analytics: true,
-});
+      API_LIMIT = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(1000, "60 s"),
+        analytics: true,
+      });
+
+      AUTH_LIMIT = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(5, "60 s"),
+        analytics: true,
+      });
+    } catch (error) {
+      console.warn("Failed to initialize Redis rate limiting:", error);
+      redis = null;
+    }
+  }
+}
+
+export { UPLOAD_LIMIT, DOWNLOAD_LIMIT, API_LIMIT, AUTH_LIMIT };
 
 class InMemoryRateLimit {
   private requests: Map<string, number[]> = new Map();
@@ -82,11 +102,11 @@ export async function getRateLimit(
   remaining: number;
   reset: number;
 }> {
+  // Initialize Redis on first use
+  initializeRedis();
+  
   try {
-    if (
-      process.env.UPSTASH_REDIS_REST_URL &&
-      process.env.UPSTASH_REDIS_REST_TOKEN
-    ) {
+    if (limiter) {
       const result = await limiter.limit(identifier);
 
       return {

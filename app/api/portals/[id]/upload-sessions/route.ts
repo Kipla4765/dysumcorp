@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // GET /api/portals/[id]/upload-sessions - Get all upload sessions for a portal
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({
@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const portalId = params.id;
+    const { id: portalId } = await params;
 
     // Verify portal belongs to user
     const portal = await prisma.portal.findUnique({
