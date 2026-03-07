@@ -48,10 +48,17 @@ export async function GET(
       return NextResponse.json({ error: "Portal not found" }, { status: 404 });
     }
 
-    // Serialize BigInt fields
+    // Serialize BigInt fields and apply defaults for messaging
     const serializedPortal = {
       ...portal,
       maxFileSize: portal.maxFileSize.toString(),
+      // Apply defaults for messaging fields if not set
+      welcomeMessage: portal.welcomeMessage || "Send us your files securely — we'll take it from here.\nFill in your details and attach the files you'd like to share with our team. All uploads are encrypted and handled with care.",
+      welcomeToastMessage: portal.welcomeToastMessage || "👋 Welcome! Please fill in your details and upload your files.",
+      welcomeToastDelay: portal.welcomeToastDelay ?? 1000,
+      welcomeToastDuration: portal.welcomeToastDuration ?? 3000,
+      submitButtonText: portal.submitButtonText || "Initialize Transfer",
+      successMessage: portal.successMessage || "Transmission Verified",
       files: portal.files.map((file) => ({
         ...file,
         size: file.size.toString(),

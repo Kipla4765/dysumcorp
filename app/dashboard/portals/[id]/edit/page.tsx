@@ -184,7 +184,7 @@ const StorageSection: React.FC<StorageSectionProps> = ({
       if (portal.storageFolderPath) {
         const pathParts = portal.storageFolderPath.split("/").filter(Boolean);
         // Create folder objects for breadcrumb
-        const folderPathObjects: StorageFolder[] = pathParts.map((name, index) => ({
+        const folderPathObjects: StorageFolder[] = pathParts.map((name: string, index: number) => ({
           id: index === pathParts.length - 1 ? portal.storageFolderId : `folder-${index}`,
           name: name,
           path: pathParts.slice(0, index + 1).join("/"),
